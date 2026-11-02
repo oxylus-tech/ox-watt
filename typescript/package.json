@@ -1,7 +1,7 @@
 {
-    "name": "@oxylus/data-client",
+    "name": "@oxylus/ox-watt",
     "version": "0.1.0",
-    "description": "Framework-independent TypeScript data access, schema validation and query primitives.",
+    "description": "Oxylus WebApp Technology Toolkit",
     "type": "module",
     "files": [
         "dist"
