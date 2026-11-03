@@ -1,9 +1,12 @@
 from functools import cached_property
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from django.conf import settings
+
+
+__all__ = ("Settings", "SettingsEditor", "OWSettings", "ow_settings")
 
 
 class Settings:
@@ -109,3 +112,16 @@ class SettingsEditor:
         self._ensure()
         with open(self.path, "w") as stream:
             yaml.dump(data, stream)
+
+
+class OWSettings(Settings):
+    """Ox-Watt settings."""
+
+    HTTP_BACKEND_SERVER: Literal["nginx", "apache"] | str | None = None
+    """
+    Http server used to run the backend. Usefull for classes and tools using
+    specific server's capabilities (as for serving files).
+    """
+
+
+ow_settings = OWSettings("OW")

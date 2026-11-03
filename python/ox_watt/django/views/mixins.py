@@ -1,21 +1,13 @@
 from pathlib import Path
-from uuid import UUID
 
-from django.core.exceptions import PermissionDenied
+from django.conf import settings
 from django.views.generic import View
-from django.views.generic.detail import SingleObjectMixin
-from django.http import HttpResponse, Http404, FileResponse
+from django.http import HttpResponse, FileResponse
 
-from caps.views import OwnedViewSet, AccessViewSet
-from caps.views.mixins import SingleOwnedMixin, OwnedPermissionMixin
-
-from ox.core.conf import ox_settings
-from ox.apps.content.views import MessageViewSet
-from . import filters, serializers, tasks
-from .models import Folder, File, FolderComment, FileComment
+from ..conf import ow_settings
 
 
-__all__ = ("FolderViewSet", "FolderAccessViewSet", "FileViewSet", "FileAccessViewSet")
+__all__ = ("ServeFileMixin",)
 
 
 class ServeFileMixin(View):
@@ -32,18 +24,26 @@ class ServeFileMixin(View):
         - otherwise, return a FileResponse.
     """
 
-    def serve(self, name: str, path: Path):
-        match ox_settings.HTTP_SERVER_BACKEND:
+    def serve(
+        self, name: str, path: Path, media_root: Path, media_url: str | None = None
+    ) -> HttpResponse | FileResponse:
+        match ow_settings.HTTP_BACKEND_SERVER:
             case "nginx":
+                media_root = media_root or Path(settings.MEDIA_ROOT)
+                media_url = media_url or settings.MEDIA_URL
+
+                if media_root not in path.parents:
+                    raise ValueError(f"Path `{path}` is not in configured media directory `{media_root}`.")
+
                 response = HttpResponse()
-                response["X-Accel-Redirect"] = ox_settings.protected_media_url(field.name)
+                url_path = path.relative_to(media_root)
+                response["X-Accel-Redirect"] = f"{media_url}{url_path}"
             case "apache":
                 response = HttpResponse()
-                response["X-Sendfile"] = field.path
+                response["X-Sendfile"] = path
 
             case _:
-                response = FileResponse(open(field.path, "rb"))
+                response = FileResponse(open(path, "rb"))
 
-        response["Content-Disposition"] = f'inline; filename="{self.object.name}"'
+        response["Content-Disposition"] = f'inline; filename="{name}"'
         return response
-
