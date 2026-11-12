@@ -114,21 +114,26 @@ export class Model extends Spec {
     }
 
     /**
-     * Return the key used as i18n.
+     * Return the key used in i18n.
+     * 
+     * @param key: optional sub element key.
      */
-    static $i18nKey(field?: string): string {
-        let key = `models.${this.$entity}`
-        if(field)
-            return key + ".fields." + field
-        return key
+    static $i18nKey(key?: string): string {
+        let prefix = `models.${this.$entity}`
+        if(key)
+            return prefix + "." + key
+        return prefix
     }
 
-    static $i18n(field?: string): string {
-        return t(this.$i18nKey(field))
+    /**
+     * Return a translation for this model.
+     */
+    static $i18n(key: string, ...args: unknown[]): string {
+        return Reflect.apply(t, this, [this.$i18nKey(key), ...args]) as string
     }
 
-    static label(): string { return this.$i18n() }
-    static labelPlural(): string { return t(this.$i18nKey(), 2) }
+    static label(): string { return this.$i18n("label") }
+    static labelPlural(): string { return t(this.$i18n("label"), 2) }
 
     get $id(): ModelId {
         return this[(this.constructor as typeof Model).idField]
