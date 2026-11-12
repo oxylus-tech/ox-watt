@@ -29,10 +29,56 @@ export interface SpecValidationOptions {
 
 
 
+/**
+ * This is the base class used as specification.
+ * 
+ * A specification allows to:
+ * - define and use fields
+ * - validate input value as fields ones.
+ */
 export class Spec
 {
-
+    /** The fields declared by this spec. */
     static fields: Record<string, SerializerField> = {};
+
+    /** Cached resolved fields for this model class. */
+    private static _resolvedFields?: Record<string, SerializerField>;
+
+
+    /**
+     * Returns all fields declared by this model and its ancestors.
+     *
+     * Child declarations override inherited fields with the same name.
+     * The result is cached independently for each model class.
+     *
+     * @returns The resolved field definitions.
+     */
+    static getFields(): Record<string, SerializerField> {
+        if (!Object.prototype.hasOwnProperty.call(this, '_resolvedFields')) {
+            const parent = Object.getPrototypeOf(this) as typeof Spec;
+
+            Object.defineProperty(this, '_resolvedFields', {
+                value: {
+                    ...(parent !== Spec ? parent.getFields() : {}),
+                    ...this.fields,
+                },
+                writable: true,
+                configurable: true,
+            });
+        }
+
+        return this._resolvedFields!;
+    }
+
+    /**
+     * Returns a field declared by this model or one of its ancestors.
+     *
+     * @param name Field name.
+     * @returns The field definition, or undefined if it does not exist.
+     */
+    static getField(name: string): SerializerField | undefined {
+        return this.getFields()[name];
+    }
 
     /**
      * Validates data against the fields declared by the concrete model class.
@@ -69,7 +115,7 @@ export class Spec
 
         const issues: ValidationIssue[] = [];
 
-        for (const [name, field] of Object.entries(this.fields)) {
+        for (const [name, field] of Object.entries(this.getFields())) {
             if (field.readOnly || (options?.partial && !(name in data))) {
                 continue;
             }

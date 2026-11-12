@@ -1,3 +1,7 @@
+---
+order: -10
+---
+
 # Guide
 
 This guide introduces the main concepts and modules provided by Ox-Watt.

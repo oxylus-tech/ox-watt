@@ -83,6 +83,9 @@ export class Model extends Spec {
     /** The relations on this model class. */
     static relations: RelationDefinitions = {};
 
+    /** Cached resolved relations for this model class. */
+    private static _resolvedRelations?: RelationDefinitions;
+
     /**
      * The name used to register this model class.
      * It should match to corresponding backend's model if any.
@@ -109,7 +112,7 @@ export class Model extends Spec {
      *
      * It follows the same convention as Django's models for interoperability.
      */
-    static get $entity(): string {
+    static get entity(): string {
         return this.app ? `${this.app}.${this.modelName}` : this.modelName
     }
 
@@ -119,7 +122,7 @@ export class Model extends Spec {
      * @param key: optional sub element key.
      */
     static i18nKey(key?: string): string {
-        let prefix = `models.${this.$entity}`
+        let prefix = `models.${this.entity}`
         if(key)
             return prefix + "." + key
         return prefix
@@ -145,11 +148,47 @@ export class Model extends Spec {
         return this.i18n(key, 2)
     }
 
+    /**
+     * Returns all relations declared by this model and its ancestors.
+     *
+     * Child declarations override inherited relations with the same name.
+     * The result is cached independently for each model class.
+     *
+     * @returns The resolved relation definitions.
+     */
+    static getRelations(): RelationDefinitions {
+        if (!Object.prototype.hasOwnProperty.call(this, '_resolvedRelations')) {
+            const parent = Object.getPrototypeOf(this) as typeof Model;
+
+            Object.defineProperty(this, '_resolvedRelations', {
+                value: {
+                    ...(parent !== Model ? parent.getRelations() : {}),
+                    ...this.relations,
+                },
+                writable: true,
+                configurable: true,
+            });
+        }
+
+        return this._resolvedRelations!;
+    }
+
+    /**
+     * Returns a relation declared by this model or one of its ancestors.
+     *
+     * @param name Relation name.
+     * @returns The relation definition, or undefined if it does not exist.
+     */
+    static getRelation(name: string): RelationDefinitions[string] | undefined {
+        return this.getRelations()[name];
+    }
+
     /** Return the instance's id as configured by the model (`idField`) */
     get $id(): ModelId {
         return this[(this.constructor as typeof Model).idField]
     }
 
+    // FIXME: move this into Spec.
     /**
      * Deserializes and validates model data.
      *
@@ -170,7 +209,7 @@ export class Model extends Spec {
         const source = input as Record<string, unknown>;
         const data: Record<string, unknown> = {};
 
-        for (const [name, field] of Object.entries(this.fields)) {
+        for (const [name, field] of Object.entries(this.getFields())) {
             if (field.readOnly || !(name in source)) {
                 continue;
             }
@@ -199,11 +238,12 @@ export class Model extends Spec {
             ? { fields: options ?? undefined }
             : options;
 
+        const fields = modelClass.getFields()
         const names = normalized.fields ?? Object.keys(modelClass.fields);
         const data: Record<string, unknown> = {};
 
         for (const name of names) {
-            const field = modelClass.fields[name];
+            const field = fields[name];
 
             if (!field || field.writeOnly || !(name in this)) {
                 continue;

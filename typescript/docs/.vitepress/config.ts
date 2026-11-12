@@ -19,8 +19,9 @@ const vitePressSidebarOptions = {
     documentRootPath: '/docs',
     useTitleFromFileHeading: true,
     collapsed: true,
-    includeRootIndexFile: true,
-    includeFolderIndexFile: true,
+    // includeRootIndexFile: true,
+    // includeFolderIndexFile: true,
+    useFolderTitleFromIndexFile: true,
     useFolderLinkFromIndexFile: true,
     sortMenusByFrontmatterOrder: true
 }
