@@ -19,19 +19,8 @@ import type { ResolvedRelationType, RepositoryModel } from '@/adm'
 describe('Database', () => {
     describe('constructor', () => {
         it('creates an empty database by default', () => {
-            const db = new Database();
-
-            expect(db.config).toEqual({});
-            expect(db.repositoryClass).toBe(Repository);
-            expect(db.apiClass).toBeDefined();
-        });
-
-        it('stores the provided configuration and classes', () => {
-            const db = new Database({}, dbConfig, Repository, FakeApiClient);
-
+            const db = new Database({}, dbConfig);
             expect(db.config).toBe(dbConfig);
-            expect(db.repositoryClass).toBe(Repository);
-            expect(db.apiClass).toBe(FakeApiClient);
         });
 
         it('registers the provided repositories and assigns itself as their database', () => {
@@ -395,5 +384,3 @@ describe('Database', () => {
         });
     });
 });
-
-

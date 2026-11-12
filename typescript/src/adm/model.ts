@@ -51,7 +51,7 @@ export interface ModelSerializeOptions {
 /**
  * Options for model deserialization.
  */
-export interface ModelDeserializeOptions { 
+export interface ModelDeserializeOptions {
     /** Allow partial deserialization. **/
     partial?: boolean;
 
@@ -60,7 +60,7 @@ export interface ModelDeserializeOptions {
 
     /**
      * Save item into the model store.
-     * 
+     *
      * This is at handled at the repository level.
      */
     save?: boolean;
@@ -84,8 +84,14 @@ export class Model extends Spec {
     /** The relations on this model class. */
     static relations: RelationDefinitions = {};
 
-    /** The name used to register this model class. */
-    static modelName = 'Model';
+    /**
+     * The name used to register this model class.
+     * It should match to corresponding backend's model if any.
+     */
+    static modelName = 'model';
+
+    /** Application name owning the model class. */
+    static app?: string;
 
     /** Attribute name used as model id. */
     static idField = 'id';
@@ -97,6 +103,15 @@ export class Model extends Spec {
     constructor(data: Record<string, unknown> = {}) {
         super();
         Object.assign(this, data);
+    }
+
+    /**
+     * Complete model name prefixed with the app's one if any.
+     *
+     * It follows the same convention as Django's models for interoperability.
+     */
+    static get $name(): string {
+        return this.app ? `${this.app}.${this.modelName}` : this.modelName
     }
 
     get $id(): ModelId {

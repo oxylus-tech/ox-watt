@@ -57,7 +57,12 @@ export function createRepo<
                            globalConfig?.repositoryClass ??
                            Repository;
     const apiClass = options.apiClass ?? globalConfig?.apiClass ?? HttpClient
-    const mergedConfig = mergeRepositoryConfig(globalConfig?.repository, config)
+    const globalRepoConfig = {
+        ...globalConfig?.repository,
+        api: globalConfig?.repository?.api ?? globalConfig?.api
+    }
+
+    const mergedConfig = mergeRepositoryConfig(globalRepoConfig, config)
     return new RepositoryType(model, mergedConfig, apiClass);
 }
 
@@ -130,4 +135,3 @@ export function createDb<TRepositories extends Repositories>(
 ): Database<TRepositories> {
     return new Database(repositories, config);
 }
-

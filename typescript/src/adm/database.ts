@@ -4,14 +4,8 @@ import { getKeysBy } from '@/utils';
 
 import type { Model, ModelClass, ModelStore } from './model';
 import type { ResolvedRelations, RelationDefinitions } from './model.types'
-import type {
-    RepositoryConfig,
-    RepositoryClass,
-    Repositories,
-    AnyRepository,
-    RepositoryModel
-} from './repository'
-import type { ApiConfig, ApiClientClass, ApiOptions } from './api.types'
+import type { Repositories, } from './repository'
+import type { ApiOptions } from './api.types'
 
 import { Repository } from './repository';
 import { HttpClient } from './api';
@@ -19,8 +13,6 @@ import { HttpClient } from './api';
 
 /** Database configuration. */
 export interface DatabaseConfig {
-    api?: ApiConfig;
-    repositories?: Record<string, RepositoryConfig>
 }
 
 /**
@@ -34,8 +26,6 @@ export class Database<
     constructor(
         repositories: TRepositories = {} as TRepositories,
         readonly config: DatabaseConfig = {},
-        readonly repositoryClass: RepositoryClass = Repository,
-        readonly apiClass: ApiClientClass = HttpClient,
     ) {
         this.repositories = { ...repositories };
     }

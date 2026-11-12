@@ -10,7 +10,14 @@ import type { RepositoryClass, RepositoryConfig } from './adm/repository';
 export interface Config {
     [key: string]: unknown;
 
-    /** Default repository configuration. */
+    /** Default configuration for api clients. */
+    api: ApiConfig;
+
+    /**
+     * Default repository configuration.
+     *
+     * The `api` configuration defaults to `Config.api` option.
+     */
     repository?: RepositoryConfig;
 
     /** Default repository implementation. */

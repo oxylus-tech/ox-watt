@@ -11,6 +11,15 @@ export function joinUrl(path: string, baseUrl: string): string {
     return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 }
 
+export function joinPaths(...paths: (string|undefined)[]): string {
+    const joinedPaths = paths
+        .filter(path => !!path)
+        .map(path => path?.replace(/^\/+|\/$/, ""))
+        .filter(path => !!path)
+        .join('/');
+    return `/${joinedPaths}/`
+}
+
 /** Resolves a dotted path in an object. */
 export function resolvePath(data: unknown, path?: string): unknown {
     if(!path)
@@ -28,4 +37,3 @@ export function resolvePath(data: unknown, path?: string): unknown {
 
     return value;
 }
-

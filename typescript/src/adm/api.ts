@@ -1,5 +1,5 @@
 import type { MaybeRef } from 'vue'
-import { setBaseUrl, resolvePath, getKeysBy, type KeySource } from '@/utils'
+import { setBaseUrl, resolvePath, joinPaths, getKeysBy, type KeySource } from '@/utils'
 
 import type { Model, ModelClass, ModelDeserializeOptions, ModelStore } from './model'
 import type {
@@ -14,7 +14,7 @@ export function mergeApiConfig(base?: ApiConfig, override?: ApiConfig): ApiConfi
     return {
         ...base,
         ...override,
-        baseUrl: setBaseUrl(base?.baseUrl, override?.baseUrl),
+        path: joinPaths(base?.path, override?.path),
         params: {
             ...base?.params,
             ...override?.params,
@@ -79,7 +79,7 @@ export abstract class ApiClient<
         key: KeySource<TSource, unknown>,
         options?: TOptions
     ): Promise<ApiResult<TModel, TRequest, TResponse>|null> {
-        const ids = getKeysBy(sources, key) 
+        const ids = getKeysBy(sources, key)
         // FIXME
         return await this.list({...options, ids } as unknown as TOptions)
     }
@@ -87,7 +87,7 @@ export abstract class ApiClient<
     /** Creates a model through the API. */
     async create(data: TModel | Record<string, unknown>, options?: TOptions): Promise<ApiResult<TModel, TRequest, TResponse>|null> {
         options = { ...options, data: this.serializeInput(data) } as TOptions
-        
+
         const result = await this.request("create", options)
         this.applyRetrieveOptions(options, result)
         return result
@@ -129,7 +129,7 @@ export abstract class ApiClient<
      */
     async request(action: string, options?: TOptions): Promise<ApiResult<TModel, TRequest, TResponse>|null> {
         options = options ?? {} as TOptions
-        
+
         const request = this.getRequest(action, options)
         const response = await this.execute(request)
         if(!response)
@@ -139,7 +139,7 @@ export abstract class ApiClient<
 
     /**
      * Return the ApiRequest object used by the `execute` method.
-     * 
+     *
      * @param action: the name of the current action (list, detail, etc.)
      * @param options: user options provided by user.
      * @return the request to pass down to `execute` method.
@@ -182,7 +182,7 @@ export abstract class ApiClient<
             params[idsLookup] = [...ids].join(",");
 
         return {
-            path,
+            path: joinPaths(this.config.path, path),
             params,
             dataKey: options.dataKey ?? endpoint?.dataKey,
             data: options.data,
@@ -194,7 +194,7 @@ export abstract class ApiClient<
 
     /**
      * Merge options from endpoint, config and api option.
-     * 
+     *
      * Currently only for objects.
      */
     protected mergeOption( attr: string, options: TOptions, endpoint?: ApiEndpoint | null ): Record<string, string> {
@@ -226,14 +226,14 @@ export abstract class ApiClient<
     }
 
     /**
-     * From the provided request, actually call remote server and return a response. 
+     * From the provided request, actually call remote server and return a response.
      */
     protected abstract execute(request: TRequest): Promise<TResponse>;
 
     /**
      * From the provided execute response, return its payload object.
      */
-    protected abstract getResultData(request: ApiRequest, response: TResponse): 
+    protected abstract getResultData(request: ApiRequest, response: TResponse):
         Promise<Record<string, unknown>|Record<string, unknown>[]|null>;
 
     /**
@@ -278,7 +278,7 @@ export abstract class ApiClient<
         const entries = Object.entries(config)
         if(!entries?.length)
             return
-        
+
         const payload = resolvePath(data, dataKey)
         const metadata: Metadata = {}
         for(const [key, path] of entries) {
