@@ -145,6 +145,8 @@ export interface ApiResult<TModel extends Model = Model, TRequest = ApiRequest, 
 export interface ApiConfig {
     /** Base URL used to resolve relative endpoint paths. */
     baseUrl?: string;
+    /** URL base path to the endpoints and any request. */
+    path?: string;
     /** Endpoint paths indexed by conventional operation name. */
     endpoints?: ApiEndpoints;
     /** Headers sent with requests. */

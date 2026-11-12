@@ -16,8 +16,6 @@ describe("Database integration", () => {
         const db = new Database(
             { users, articles },
             dbConfig,
-            Repository,
-            FakeApiClient,
         );
 
         const articlesApi = articles.api()! as FakeApiClient<Article>;
@@ -65,8 +63,6 @@ describe("Database integration", () => {
         const db = new Database(
             { users, articles },
             dbConfig,
-            Repository,
-            FakeApiClient,
         );
 
         const articlesApi = articles.api()! as FakeApiClient<Article>;

@@ -1,10 +1,9 @@
 import type { ShallowRef } from 'vue'
+
+import { t } from '@/i18n';
 import { ReactiveKeyedStore, type StoreGetOptions } from '@/utils';
 
-import type {
-    SerializerField,
-    RelationDefinitions
-} from './model.types';
+import type { SerializerField, RelationDefinitions } from './model.types';
 import { Spec, type SpecClass, type SpecValidationOptions } from './spec';
 
 
@@ -110,9 +109,26 @@ export class Model extends Spec {
      *
      * It follows the same convention as Django's models for interoperability.
      */
-    static get $name(): string {
+    static get $entity(): string {
         return this.app ? `${this.app}.${this.modelName}` : this.modelName
     }
+
+    /**
+     * Return the key used as i18n.
+     */
+    static $i18nKey(field?: string): string {
+        let key = `models.${this.$entity}`
+        if(field)
+            return key + ".fields." + field
+        return key
+    }
+
+    static $i18n(field?: string): string {
+        return t(this.$i18nKey(field))
+    }
+
+    static label(): string { return this.$i18n() }
+    static labelPlural(): string { return t(this.$i18nKey(), 2) }
 
     get $id(): ModelId {
         return this[(this.constructor as typeof Model).idField]

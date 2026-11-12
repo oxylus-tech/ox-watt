@@ -11,7 +11,7 @@ export interface Config {
     [key: string]: unknown;
 
     /** Default configuration for api clients. */
-    api: ApiConfig;
+    api?: ApiConfig;
 
     /**
      * Default repository configuration.

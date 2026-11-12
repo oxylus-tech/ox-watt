@@ -81,7 +81,7 @@ describe('mergeApiConfig', () => {
 
     it('returns an empty configuration when both inputs are undefined', () => {
         expect(mergeApiConfig()).toEqual({
-            baseUrl: undefined,
+            path: '',
             params: {},
             headers: {},
         });
@@ -865,14 +865,14 @@ describe('HttpClient', () => {
             const client = createClient({
                 baseUrl: 'https://api.example.test/',
                 endpoints: {
-                    get: { path: 'articles/{id}' },
+                    get: { path: 'articles/{id}/' },
                 },
             });
 
             await client.get(42);
 
             expect(fetchMock.mock.calls[0][0]).toBe(
-                'https://api.example.test/articles/42',
+                'https://api.example.test/articles/42/',
             );
         });
 
@@ -993,7 +993,6 @@ describe('HttpClient', () => {
 
         it('supports paths without a base URL', async () => {
             const fetchMock = mockFetch();
-
             const client = createClient({
                 endpoints: {
                     list: { path: '/articles' },

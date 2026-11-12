@@ -73,7 +73,7 @@ export function useDb(repos?: Repositories) {
     const articles = new Repository(Article, repoConfigs.articles, FakeApiClient);
     const db = new Database(
         { ...repos, users, articles },
-        dbConfig, Repository, FakeApiClient
+        dbConfig
     );
     return { db, users, articles, ...repos };
 }
