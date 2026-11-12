@@ -138,13 +138,13 @@ export class Model extends Spec {
     /** Return the model's (or one of its fields) translated label.
     */
     static label(field?: string): string {
-        const key = field ? `fields.${field}` : "label"
+        const key = field && `fields.${field}`
         return this.i18n(key)
     }
 
     /** Same as `label`, but in plural form. */
     static labelPlural(field?: string): string {
-        const key = field ? `fields.${field}` : "label"
+        const key = field && `fields.${field}`
         return this.i18n(key, 2)
     }
 
