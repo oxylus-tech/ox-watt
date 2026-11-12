@@ -118,7 +118,7 @@ export class Model extends Spec {
      * 
      * @param key: optional sub element key.
      */
-    static $i18nKey(key?: string): string {
+    static i18nKey(key?: string): string {
         let prefix = `models.${this.$entity}`
         if(key)
             return prefix + "." + key
@@ -128,13 +128,24 @@ export class Model extends Spec {
     /**
      * Return a translation for this model.
      */
-    static $i18n(key: string, ...args: unknown[]): string {
-        return Reflect.apply(t, this, [this.$i18nKey(key), ...args]) as string
+    static i18n(key: string, ...args: unknown[]): string {
+        return Reflect.apply(t, this, [this.i18nKey(key), ...args]) as string
     }
 
-    static label(): string { return this.$i18n("label") }
-    static labelPlural(): string { return t(this.$i18n("label"), 2) }
+    /** Return the model's (or one of its fields) translated label.
+    */
+    static label(field?: string): string {
+        const key = field ? `fields.${field}` : "label"
+        return this.i18n(key)
+    }
 
+    /** Same as `label`, but in plural form. */
+    static labelPlural(field?: string): string {
+        const key = field ? `fields.${field}` : "label"
+        return this.i18n(key, 2)
+    }
+
+    /** Return the instance's id as configured by the model (`idField`) */
     get $id(): ModelId {
         return this[(this.constructor as typeof Model).idField]
     }
