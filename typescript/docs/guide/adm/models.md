@@ -139,7 +139,19 @@ class Article extends BaseEntity {
 }
 ```
 
-The exact inheritance behavior depends on how the model field definitions are composed.
+Fields of `BaseEntity` are resolved on the `Article`. However to have parent visibles,
+you should use accessor methods rather than the `fields` attribute:
+
+```ts
+const fields = Article.getFields(); // contains "id", "createdAt", "title", etc...
+const createdAtField = Article.getField("createdAt");
+
+console.log(Article.fields)
+// { title: StringField(), content: StringField() }
+```
+
+Same for relations with `Article.getRelations()` and `Article.getRelation()` rather than direct `relations` attribute access.
+
 
 ## Next steps
 
