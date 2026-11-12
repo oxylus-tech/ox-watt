@@ -1,0 +1,22 @@
+{
+    "entryPoints": [
+        "src/adm/index.ts",
+        "src/i18n/index.ts"
+    ],
+    "entryPointStrategy": "expand",
+    "plugin": [
+        "typedoc-plugin-markdown"
+    ],
+    "out": "docs/api",
+    "entryFileName": "index.md",
+    "readme": "none",
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeInternal": true,
+    "categorizeByGroup": true,
+    "navigation": {
+        "includeCategories": true,
+        "includeGroups": true
+    }
+}
+
