@@ -27,6 +27,7 @@ export interface SerializerField {
     readonly nullable: boolean;
     readonly readOnly: boolean;
     readonly writeOnly: boolean;
+    readonly defaultValue: unknown;
 
     /**
      * Converts an internal value into its external representation.

@@ -41,6 +41,27 @@ export interface EditorErrorContext<TData extends object> {
 }
 
 /**
+ * Context provided to a custom save callback.
+ */
+export interface EditorSaveContext {
+    /**
+     * Applies the default save operation.
+     *
+     * @param apply Optional replacement for the default synchronization.
+     */
+    defaultSave(apply?: () => void): void;
+}
+
+/**
+ * Custom persistence callback.
+ */
+export type EditorSave<TData extends object> = (
+    data: TData,
+    source: TData,
+    context: EditorSaveContext,
+) => Promise<unknown> | unknown;
+
+/**
  * Configuration options for a generic editor.
  */
 export interface EditorOptions<TData extends object> {
@@ -71,10 +92,7 @@ export interface EditorOptions<TData extends object> {
      * @param source Original source object.
      * @returns The persistence operation result.
      */
-    save?: (
-        data: TData,
-        source: TData,
-    ) => Promise<unknown> | unknown;
+    save?: EditorSave<TData>;
 
     /** Called after a successful save. */
     onSave?: (result: unknown, data: TData) => void;
@@ -208,7 +226,9 @@ export function useEditor<TData extends object>(
     const copy = options.copy ?? defaultCopy;
 
     const source = shallowRef(initialSource);
-    const original = shallowRef(copy(initialSource, fields));
+    const original: ShallowRef<TData> = shallowRef<TData>(
+        createCopy(initialSource),
+    );
     const data = reactive(copy(initialSource, fields)) as TData;
 
     const isSaving = ref(false);
@@ -425,6 +445,18 @@ export function useEditor<TData extends object>(
 
         const currentSourceVersion = sourceVersion;
         const currentDataVersion = dataVersion;
+        let didDefaultSave = false;
+        let didCustomSave = false;
+
+        const defaultSave = (apply?: () => void): void => {
+            if (apply) {
+                apply();
+                didCustomSave = true;
+            } else
+                copyFields(submittedSource, submittedData, fields);
+
+            didDefaultSave = true;
+        };
 
         isSaving.value = true;
 
@@ -432,14 +464,14 @@ export function useEditor<TData extends object>(
 
         try {
             if (options.save)
-                result = await options.save(submittedData, submittedSource);
+                result = await options.save(submittedData, submittedSource, {defaultSave})
             else
-                copyFields(submittedSource, submittedData, fields);
+                defaultSave()
 
             if (sourceVersion === currentSourceVersion) {
                 original.value = createCopy(submittedSource);
 
-                if (!options.save && dataVersion === currentDataVersion)
+                if (didDefaultSave && !didCustomSave && dataVersion === currentDataVersion)
                     updateData(data, original.value);
             }
         } catch (error) {

@@ -1,4 +1,3 @@
-
 import { describe, expect, it, vi } from "vitest";
 
 import { useEditor } from "@/adm/composables/editor";
@@ -391,6 +390,9 @@ describe("useEditor", () => {
                     name: "Bob",
                 }),
                 source,
+                expect.objectContaining({
+                    defaultSave: expect.any(Function)
+                })
             );
         });
 
@@ -567,6 +569,115 @@ describe("useEditor", () => {
             await expect(editor.save()).rejects.toBe(error);
 
             expect(editor.isSaving.value).toBe(false);
+        });
+
+        it('provides defaultSave to a custom save callback', async () => {
+            const source = {
+                name: 'Original',
+            };
+            const save = vi.fn();
+
+            const editor = useEditor(source, {
+                fields: ['name'],
+                save,
+            });
+
+            editor.data.name = 'Updated';
+
+            await editor.save();
+
+            expect(save).toHaveBeenCalledOnce();
+
+            const [, , context] = save.mock.calls[0];
+
+            expect(context.defaultSave).toEqual(expect.any(Function));
+        });
+
+        it('does not apply the default save when a custom save does not call defaultSave', async () => {
+            const source = {
+                name: 'Original',
+            };
+            const save = vi.fn();
+
+            const editor = useEditor(source, {
+                fields: ['name'],
+                save,
+            });
+
+            editor.data.name = 'Updated';
+
+            await editor.save();
+
+            expect(source.name).toBe('Original');
+            expect(editor.data.name).toBe('Updated');
+            expect(editor.isDirty.value).toBe(true);
+        });
+
+        it('applies the default save when requested by a custom save callback', async () => {
+            const source = {
+                name: 'Original',
+            };
+
+            const save = vi.fn((_data, _source, context) => {
+                context.defaultSave();
+            });
+
+            const editor = useEditor(source, {
+                fields: ['name'],
+                save,
+            });
+
+            editor.data.name = 'Updated';
+
+            await editor.save();
+
+            expect(source.name).toBe('Updated');
+            expect(editor.isDirty.value).toBe(false);
+        });
+
+        it('allows defaultSave to use a custom synchronization function', async () => {
+            const source = {
+                name: 'Original',
+            };
+
+            const save = vi.fn((data, target, context) => {
+                context.defaultSave(() => {
+                    target.name = data.name.toUpperCase();
+                });
+            });
+
+            const editor = useEditor(source, {
+                fields: ['name'],
+                save,
+            });
+
+            editor.data.name = 'Updated';
+
+            await editor.save();
+
+            expect(source.name).toBe('UPDATED');
+            expect(editor.isDirty.value).toBe(true);
+        });
+
+        it('does not overwrite editor data changed during a custom save', async () => {
+            const source = {
+                name: 'Original',
+            };
+
+            const editor = useEditor(source, {
+                fields: ['name'],
+                save: async (_data, _source, context) => {
+                    context.defaultSave();
+                },
+            });
+
+            editor.data.name = 'Submitted';
+
+            await editor.save();
+
+            expect(source.name).toBe('Submitted');
+            expect(editor.data.name).toBe('Submitted');
+            expect(editor.isDirty.value).toBe(false);
         });
     });
 

@@ -27,6 +27,8 @@ export interface ModelClass<TModel extends Model = Model> extends SpecClass<Mode
     /** The relations definitions. */
     relations: TModel["relations"]
 
+    entity: string;
+
     /**
      * Constructs an instance from already processed data.
      * @param data The values assigned to the instance.
@@ -34,6 +36,13 @@ export interface ModelClass<TModel extends Model = Model> extends SpecClass<Mode
     new (data?: Record<string, unknown>): TModel;
 
     deserialize<T extends typeof Model>(input: unknown, options?: ModelDeserializeOptions): InstanceType<T>;
+
+    i18nKey(key?: string): string;
+    i18n(key: string, ...args: unknown[]): string;
+    label(field?: string): string;
+    labelPlural(field?: string): string;
+    getRelations(): RelationDefinitions;
+    getRelation(name: string): RelationDefinitions[string] | undefined;
 }
 
 export type ModelOf<TModelClass extends ModelClass> = InstanceType<TModelClass>;
@@ -137,7 +146,7 @@ export class Model extends Spec {
     /**
      * Return a translation for this model.
      */
-    static i18n(key: string, ...args: unknown[]): string {
+    static i18n(key?: string, ...args: unknown[]): string {
         return Reflect.apply(t, this, [this.i18nKey(key), ...args]) as string
     }
 
@@ -232,11 +241,9 @@ export class Model extends Spec {
      */
     copy(): this {
         const copy = Object.create(Object.getPrototypeOf(this));
-
-        for (const name of Object.keys(this.constructor.getFields())) {
+        const fields = (this.constructor as typeof Model).getFields()
+        for (const name of Object.keys(fields))
             copy[name] = cloneDeep(this[name]);
-        }
-
         return copy;
     }
 

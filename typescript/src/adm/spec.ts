@@ -14,6 +14,10 @@ export interface SpecClass<TValidationOptions=SpecValidationOptions> {
      * @returns The validation issues found.
      */
     validate(value: unknown, options?: TValidationOptions): ValidationIssue[]|null;
+
+    getDefaults(): Record<string, unknown>;
+    getFields(): Record<string, SerializerField>;
+    getField(name: string): SerializerField | undefined;
 }
 
 
@@ -26,7 +30,6 @@ export interface SpecValidationOptions {
     /** Don't throw exception but return boolean **/
     noExc?: boolean;
 }
-
 
 
 /**
