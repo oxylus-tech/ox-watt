@@ -176,7 +176,7 @@ export function useApiModelEditor<TModel extends Model>(
         onSave?.(result, data);
     }
 
-    const editor: ApiModelEditor<TModel> = useModelEditor(repository, source, {
+    const editor = useModelEditor(repository, source, {
         ...modelOptions,
         save,
         onError: handleError,
