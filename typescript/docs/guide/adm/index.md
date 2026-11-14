@@ -83,6 +83,8 @@ class Article extends Model {
 
 We will progressively build on these models to demonstrate validation, repositories, API access and Vue integration.
 
+
+
 ## Guide
 
 - [Core concepts](./concepts)
@@ -93,7 +95,7 @@ We will progressively build on these models to demonstrate validation, repositor
 - [Database](./database)
 - [API integration](./api)
 - [Relations](./relations)
-- [Vue integration](./vue)
+- [Vue integration](./vue/index)
 
 ## API reference
 

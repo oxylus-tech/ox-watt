@@ -117,5 +117,5 @@ ADM can be used in Vue applications through its reactive integration.
 
 The model and repository concepts remain independent from Vue, while the integration provides reactive access to data in components.
 
-See [Vue integration](./vue).
+See [Vue integration](./vue/index).
 
