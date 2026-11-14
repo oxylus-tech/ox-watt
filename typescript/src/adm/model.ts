@@ -1,4 +1,5 @@
 import type { ShallowRef } from 'vue'
+import { cloneDeep } from 'lodash-es';
 
 import { t } from '@/i18n';
 import { ReactiveKeyedStore, type StoreGetOptions } from '@/utils';
@@ -107,6 +108,11 @@ export class Model extends Spec {
         Object.assign(this, data);
     }
 
+    /** Return the instance's id as configured by the model (`idField`) */
+    get $id(): ModelId {
+        return this[(this.constructor as typeof Model).idField]
+    }
+
     /**
      * Complete model name prefixed with the app's one if any.
      *
@@ -122,7 +128,7 @@ export class Model extends Spec {
      * @param key: optional sub element key.
      */
     static i18nKey(key?: string): string {
-        let prefix = `models.${this.entity}`
+        let prefix = this.app ? `${this.app}.models.${this.modelName}` : `models.${this.modelName}`
         if(key)
             return prefix + "." + key
         return prefix
@@ -183,11 +189,6 @@ export class Model extends Spec {
         return this.getRelations()[name];
     }
 
-    /** Return the instance's id as configured by the model (`idField`) */
-    get $id(): ModelId {
-        return this[(this.constructor as typeof Model).idField]
-    }
-
     // FIXME: move this into Spec.
     /**
      * Deserializes and validates model data.
@@ -222,6 +223,21 @@ export class Model extends Spec {
         this.validate(data, { partial: options?.partial });
 
         return new this(data) as InstanceType<T>;
+    }
+
+    /**
+     * Creates an independent copy of the model's declared fields.
+     *
+     * @returns A copied model instance.
+     */
+    copy(): this {
+        const copy = Object.create(Object.getPrototypeOf(this));
+
+        for (const name of Object.keys(this.constructor.getFields())) {
+            copy[name] = cloneDeep(this[name]);
+        }
+
+        return copy;
     }
 
     /**

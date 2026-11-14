@@ -44,6 +44,21 @@ export class Spec
     /** Cached resolved fields for this model class. */
     private static _resolvedFields?: Record<string, SerializerField>;
 
+    /**
+     * Returns the default values for all declared fields.
+     *
+     * @returns An object containing the configured default values.
+     */
+    static getDefaults(): Record<string, unknown> {
+        const defaults: Record<string, unknown> = {};
+
+        for (const [name, field] of Object.entries(this.getFields())) {
+            if (field.defaultValue !== undefined)
+                defaults[name] = field.defaultValue;
+        }
+
+        return defaults;
+    }
 
     /**
      * Returns all fields declared by this model and its ancestors.

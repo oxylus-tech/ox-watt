@@ -1,6 +1,7 @@
 """Models used exclusively for tests."""
 
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from ox_watt.django.models import UUID
 from ox_watt.django.models.tree import TreeNode as _TreeNode
@@ -10,20 +11,32 @@ from ox_watt.django.files.models import BaseFile, BaseFolder
 __all__ = ("Value", "TreeNode", "OwnedTreeNode", "File", "Folder", "SerializerTestModel", "Child", "Parent")
 
 
+class SharedStatus(models.TextChoices):
+    """Enum shared by multiple models."""
+
+    ENABLED = "enabled", "Enabled"
+    DISABLED = "disabled", "Disabled"
+
+
 class Value(models.Model):
-    """Base model class to use in ox applications.
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        INACTIVE = "inactive", "Inactive"
 
-    It provides:
-        - segregation between storage id and public uuid;
-        - urls based on router declaration;
-    """
+    SharedStatus = SharedStatus
 
-    name = models.CharField(max_length=32, default="")
-    value = models.IntegerField(default=0)
+    name = models.CharField(_("Name"), max_length=32, default="", help_text=_("Name of the value."))
+    value = models.IntegerField(_("Value"), default=0)
+    status = models.CharField(
+        _("Status"),
+        max_length=16,
+        choices=Status.choices,
+        default=Status.ACTIVE,
+    )
 
 
 class TreeNode(_TreeNode):
-    name = models.CharField(max_length=32, default="")
+    name = models.CharField(_("Name"), max_length=32, default="")
 
 
 class Folder(BaseFolder):
@@ -31,27 +44,29 @@ class Folder(BaseFolder):
 
 
 class File(BaseFile):
-    folder = models.ForeignKey(Folder, models.CASCADE, related_name="files")
+    folder = models.ForeignKey(Folder, models.CASCADE, related_name="files", verbose_name=_("Folder"))
 
 
 class SerializerTestModel(UUID):
     """Minimal model used to test ModelSerializer."""
 
-    name = models.CharField(max_length=100)
+    SharedStatus = SharedStatus
+
+    name = models.CharField(_("Name"), max_length=100)
 
 
 class Parent(UUID):
     """Model with reverse related objects for nested serializer tests."""
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(_("Name"), max_length=100)
 
 
 class Child(UUID):
     """Child model linked to Parent."""
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(_("Name"), max_length=100)
     parent = models.ForeignKey(
-        Parent,
+        Parent, models.CASCADE,
         related_name="children",
-        on_delete=models.CASCADE,
+        verbose_name=_("Parent")
     )

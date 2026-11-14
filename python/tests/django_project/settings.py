@@ -27,6 +27,7 @@ JWT_KEY = "jwt-insecure-7yj2^c_lvd^n$6wq4@a98j9&1+!424*$t(p9+3!8-do*m+-@5q"
 # Application definition
 INSTALLED_APPS = [
     "tests.django_project.testapp",
+    "ox_watt.django",
     "caps",
     "django.contrib.admin",
     "django.contrib.auth",

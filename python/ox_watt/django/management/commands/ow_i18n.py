@@ -36,10 +36,18 @@ def get_enum_subclasses(cls: type) -> set[type[Enum]]:
     :return: Set of discovered enum classes.
     """
     result = set()
+    visited = set()
 
-    for subclass in cls.__subclasses__():
-        result.add(subclass)
-        result.update(get_enum_subclasses(subclass))
+    def collect(base: type) -> None:
+        for subclass in base.__subclasses__():
+            if subclass in visited:
+                continue
+
+            visited.add(subclass)
+            result.add(subclass)
+            collect(subclass)
+
+    collect(cls)
 
     return result
 
@@ -101,10 +109,10 @@ def get_enum_name(
     model: type[models.Model] | None = None,
 ) -> str:
     """
-    Return a unique enum name within its translation namespace.
+    Return a normalized enum name within its translation namespace.
 
-    For model enums, use the qualified name relative to the model.
-    For application enums, use the module path relative to the application.
+    Model enums use their qualified name relative to the model.
+    Application enums use their qualified name, regardless of their module.
 
     :param enum_class: Enum class.
     :param app_config: Owning application configuration.
@@ -114,21 +122,7 @@ def get_enum_name(
     if model is not None and is_model_enum(enum_class, model):
         return enum_class.__qualname__[len(model.__qualname__) + 1:]
 
-    module = enum_class.__module__
-    app_name = app_config.name
-
-    if module == app_name:
-        module_path = ""
-    else:
-        module_path = module.removeprefix(app_name + ".")
-
-    if module_path.startswith("enums."):
-        module_path = module_path[len("enums."):]
-
-    parts = [part for part in (module_path, enum_class.__qualname__) if part]
-
-    return ".".join(parts)
-
+    return enum_class.__qualname__
 
 
 class Command(BaseCommand):

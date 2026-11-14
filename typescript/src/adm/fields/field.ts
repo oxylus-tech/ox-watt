@@ -1,4 +1,5 @@
 import type { SerializerField, ValidationIssue, FieldDeserializeContext, FieldSerializeContext } from "../model.types"
+import type { Enum } from "../enum"
 
 
 /**
@@ -19,6 +20,11 @@ export interface BaseFieldConfig {
 
     /** The default value applied when a value is absent. */
     default?: unknown;
+
+    /**
+     * Enum providing the available field choices.
+     */
+    choices?: Enum
 }
 
 /**
@@ -77,6 +83,13 @@ export abstract class Field<TConfig extends BaseFieldConfig = BaseFieldConfig>
         return this.config.writeOnly ?? false;
     }
 
+    /**
+     * Returns the configured default value.
+     */
+    get defaultValue(): unknown {
+        return this.config.default;
+    }
+    
     /**
      * Serializes a value after validating it.
      * @param value The internal value to serialize.
