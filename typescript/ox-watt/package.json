@@ -1,18 +1,18 @@
 {
-    "name": "@oxylus/ox-watt",
+    "name": "ox-watt",
     "version": "0.1.0",
     "description": "Oxylus WebApp Technology Toolkit",
     "type": "module",
     "files": [
         "dist"
     ],
-    "main": "./dist/ox-data.js",
-    "module": "./dist/ox-data.js",
+    "main": "./dist/ox-watt.js",
+    "module": "./dist/ox-watt.js",
     "types": "./dist/types/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/types/index.d.ts",
-            "import": "./dist/ox-data.js"
+            "import": "./dist/ox-watt.js"
         }
     },
     "scripts": {
