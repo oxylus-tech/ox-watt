@@ -1,5 +1,14 @@
-import type { SerializerField, ValidationIssue, FieldDeserializeContext, FieldSerializeContext } from "../model.types"
+import { resolveStaticValues } from '@/utils/functional';
+import type {
+    SerializerField,
+    ValidationIssue,
+    ValidationRule,
+    FieldDeserializeContext,
+    FieldSerializeContext
+} from "../model.types"
 import type { Enum } from "../enum"
+import type { Widget } from "./widget";
+import { ValidationError } from '../model.types';
 
 
 /**
@@ -21,28 +30,14 @@ export interface BaseFieldConfig {
     /** The default value applied when a value is absent. */
     default?: unknown;
 
-    /**
-     * Enum providing the available field choices.
-     */
+    /** Enum providing the available field choices. */
     choices?: Enum
-}
 
-/**
- * Represents a validation failure containing one or more issues.
- */
-export class ValidationError extends Error {
-    /** The validation issues that caused the error. */
-    readonly issues: ValidationIssue[];
+    /** Widget used to render the field. */
+    widget?: Widget;
 
-    /**
-     * Creates a validation error.
-     * @param issues The validation issues that caused the error.
-     */
-    constructor(issues: ValidationIssue[]) {
-        super(issues.map((issue) => `${issue.path}: ${issue.message}`).join("\n"));
-        this.name = "ValidationError";
-        this.issues = issues;
-    }
+    /** Additional validation rules applied to the field. **/
+    rules?: ValidationRule[];
 }
 
 /**
@@ -52,6 +47,14 @@ export class ValidationError extends Error {
 export abstract class Field<TConfig extends BaseFieldConfig = BaseFieldConfig>
     implements SerializerField
 {
+    /** Default widget used by fields of this class. */
+    static widget?: Widget;
+
+    /** Default validation rules to apply at all times. **/
+    static rules?: ValidationRule[];
+
+    private static _resolvedRules?: ValidationRule[];
+
     protected readonly config: TConfig;
         
     /**
@@ -61,7 +64,6 @@ export abstract class Field<TConfig extends BaseFieldConfig = BaseFieldConfig>
     protected constructor(config: TConfig = {} as TConfig) {
         this.config = config
     }
-
 
     /** Whether a value is required. */
     get required(): boolean {
@@ -90,6 +92,46 @@ export abstract class Field<TConfig extends BaseFieldConfig = BaseFieldConfig>
         return this.config.default;
     }
     
+    /**
+     * Returns the widget configured for this field.
+     *
+     * The instance configuration takes precedence over the class default.
+     */
+    get widget(): Widget | undefined {
+        return this.config.widget ?? (this.constructor as typeof Field).widget;
+    }
+
+    /**
+     * Returns the validation rules declared by this field class and its parents.
+     *
+     * @returns The inherited validation rules.
+     */
+    static getRules(): ValidationRule[] {
+        return resolveStaticValues(
+            this,
+            "_resolvedRules",
+            "getRules",
+            Object.prototype.hasOwnProperty.call(this, "rules")
+                ? this.rules
+                : [],
+        );
+    }
+
+    /**
+     * Returns all form validation rules applicable to this field instance.
+     *
+     * Static rules are inherited from the field class hierarchy. Instance rules
+     * are appended afterwards.
+     *
+     * @returns The validation rules for this field instance.
+     */
+    getRules(): ValidationRule[] {
+        return [
+            ...(this.constructor as typeof Field).getRules(),
+            ...(this.config.rules ?? []),
+        ];
+    }
+
     /**
      * Serializes a value after validating it.
      * @param value The internal value to serialize.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ListField } from "@/adm/fields/list";
 import { StringField } from "@/adm/fields/string";
-import { ValidationError } from "@/adm/fields/field";
+import { ValidationError } from "@/adm/model.types";
 
 describe("ListField", () => {
     it("accepts an array of valid values", () => {

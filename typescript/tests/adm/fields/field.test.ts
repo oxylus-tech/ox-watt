@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-    Field,
-    ValidationError,
-    type BaseFieldConfig,
-} from "@/adm/fields/field";
+import { Field, type BaseFieldConfig, } from "@/adm/fields/field";
+import { ValidationError } from "@/adm/model.types";
 
 class TestField extends Field<BaseFieldConfig> {
     constructor(config: BaseFieldConfig = {}) {

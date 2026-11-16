@@ -4,7 +4,7 @@ import { Model, type ModelClass } from "@/adm/model";
 import { ModelField } from "@/adm/fields/model";
 import { StringField } from "@/adm/fields/string";
 import { IntegerField } from "@/adm/fields/number";
-import { ValidationError } from "@/adm/fields/field";
+import { ValidationError } from "@/adm/model.types";
 import type { ModelResolver } from "@/adm/model.types";
 
 class Author extends Model {

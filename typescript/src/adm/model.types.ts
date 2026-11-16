@@ -18,6 +18,30 @@ export interface ValidationIssue {
     message: string;
 }
 
+/**
+ * A validation rule
+ */
+export type ValidationRule = (value: unknown) => true | string;
+
+
+/**
+ * Represents a validation failure containing one or more issues.
+ */
+export class ValidationError extends Error {
+    /** The validation issues that caused the error. */
+    readonly issues: ValidationIssue[];
+
+    /**
+     * Creates a validation error.
+     * @param issues The validation issues that caused the error.
+     */
+    constructor(issues: ValidationIssue[]) {
+        super(issues.map((issue) => `${issue.path}: ${issue.message}`).join("\n"));
+        this.name = "ValidationError";
+        this.issues = issues;
+    }
+}
+
 // ---- Field
 /**
  * Defines the serialization, deserialization, and validation contract.

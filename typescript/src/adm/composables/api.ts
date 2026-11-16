@@ -61,11 +61,13 @@ interface UseAsyncOptions<TResult> {
     getKey?: () => unknown;
 }
 
+
 /**
  * Creates reactive state for an asynchronous operation.
  *
  * Concurrent executions with the same key share the same Promise.
  * When no key is provided, executions are independent.
+ * Only the latest distinct execution can update the result or error state.
  *
  * @template TResult Type of the operation result.
  * @param request Asynchronous operation to execute.
@@ -83,6 +85,8 @@ export function useAsync<TResult>(
     const pending = new Set<Promise<TResult>>();
     const pendingByKey = new Map<unknown, Promise<TResult>>();
 
+    let latestExecution = 0;
+
     /**
      * Executes the operation, reusing an existing Promise when its key is pending.
      *
@@ -95,6 +99,7 @@ export function useAsync<TResult>(
         if (existing)
             return existing;
 
+        const execution = ++latestExecution;
         const promise = Promise.resolve().then(request);
 
         pending.add(promise);
@@ -107,10 +112,15 @@ export function useAsync<TResult>(
 
         try {
             const response = await promise;
-            result.value = response;
+
+            if (execution === latestExecution)
+                result.value = response;
+
             return response;
         } catch (err) {
-            error.value = err;
+            if (execution === latestExecution)
+                error.value = err;
+
             throw err;
         } finally {
             pending.delete(promise);
@@ -129,6 +139,7 @@ export function useAsync<TResult>(
         execute
     };
 }
+
 
 /**
  * Creates reactive state for an API operation.

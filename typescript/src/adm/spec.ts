@@ -1,5 +1,6 @@
-import type { SerializerField, ValidationIssue } from "./model.types";
-import { ValidationError} from "./fields/field";
+import { resolveStaticValues } from '@/utils/functional';
+import type { SerializerField, ValidationIssue, ValidationRule } from "./model.types";
+import { ValidationError} from "./model.types";
 
 
 
@@ -7,17 +8,13 @@ import { ValidationError} from "./fields/field";
  * A class of Spec.
  */
 export interface SpecClass<TValidationOptions=SpecValidationOptions> {
-    /**
-     * Validates a value without transforming it.
-     * @param value The value to validate.
-     * @param path The path used in validation issues.
-     * @returns The validation issues found.
-     */
+    rules?: ValidationRule[];
+    
     validate(value: unknown, options?: TValidationOptions): ValidationIssue[]|null;
-
     getDefaults(): Record<string, unknown>;
     getFields(): Record<string, SerializerField>;
     getField(name: string): SerializerField | undefined;
+    runRules(data: unknown, options?: SpecValidationOptions): string[]
 }
 
 
@@ -44,8 +41,14 @@ export class Spec
     /** The fields declared by this spec. */
     static fields: Record<string, SerializerField> = {};
 
-    /** Cached resolved fields for this model class. */
+    /** Form validation rules. */
+    static rules?: ValidationRule[];
+
+    /** Cached resolved fields for this spec class. */
     private static _resolvedFields?: Record<string, SerializerField>;
+
+    /** Cached resolved rules for this spec class. */
+    private static _resolvedRules?: ValidationRule[];
 
     /**
      * Returns the default values for all declared fields.
@@ -72,20 +75,12 @@ export class Spec
      * @returns The resolved field definitions.
      */
     static getFields(): Record<string, SerializerField> {
-        if (!Object.prototype.hasOwnProperty.call(this, '_resolvedFields')) {
-            const parent = Object.getPrototypeOf(this) as typeof Spec;
-
-            Object.defineProperty(this, '_resolvedFields', {
-                value: {
-                    ...(parent !== Spec ? parent.getFields() : {}),
-                    ...this.fields,
-                },
-                writable: true,
-                configurable: true,
-            });
-        }
-
-        return this._resolvedFields!;
+        return resolveStaticValues(
+            this,
+            "_resolvedFields",
+            "getFields",
+            this.fields
+        )
     }
 
     /**
@@ -96,6 +91,22 @@ export class Spec
      */
     static getField(name: string): SerializerField | undefined {
         return this.getFields()[name];
+    }
+
+    /**
+     * Return all rules declared by this model and its ancestors.
+     * 
+     * Child declarations are appended to parent's ones.
+     * 
+     * @returns The resolved validation rules.
+     */
+    static getRules(): ValidationRule[] {
+        return resolveStaticValues(
+            this,
+            "_resolvedRules",
+            "getRules",
+            this.rules
+        )
     }
 
     /**
@@ -115,6 +126,17 @@ export class Spec
         if (options?.noExc) return issues;
 
         throw new ValidationError(issues);
+    }
+
+    /**
+     * Run rules and return errors message
+     */
+    static runRules(data: unknown, options?: SpecValidationOptions): string[] {
+        const results = (
+            this.getRules().map((rule) => rule(data))
+                .filter((result) => typeof result == "string" && result)
+        )
+        return results as string[]
     }
 
     /**

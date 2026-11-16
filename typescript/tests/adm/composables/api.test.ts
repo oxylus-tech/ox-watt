@@ -1,4 +1,3 @@
-
 import { effectScope, nextTick, ref, reactive, isRef } from 'vue';
 import type { Ref } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -206,6 +205,87 @@ describe('useAsync', () => {
         await expect(firstExecution).resolves.toBe(1);
         await expect(secondExecution).resolves.toBe(2);
     });
+
+    it('keeps the result of the latest execution when requests resolve out of order', async () => {
+        const first = deferred<number>();
+        const second = deferred<number>();
+
+        const request = vi.fn()
+            .mockImplementationOnce(() => first.promise)
+            .mockImplementationOnce(() => second.promise);
+
+        const state = useAsync(request);
+
+        const firstExecution = state.execute();
+        const secondExecution = state.execute();
+
+        await Promise.resolve();
+
+        second.resolve(2);
+        await expect(secondExecution).resolves.toBe(2);
+
+        expect(state.result.value).toBe(2);
+
+        first.resolve(1);
+        await expect(firstExecution).resolves.toBe(1);
+
+        expect(state.result.value).toBe(2);
+    });
+
+    it('ignores errors from outdated executions', async () => {
+        const first = deferred<number>();
+        const second = deferred<number>();
+        const error = new Error('Latest request failed');
+
+        const request = vi.fn()
+            .mockImplementationOnce(() => first.promise)
+            .mockImplementationOnce(() => second.promise);
+
+        const state = useAsync(request);
+
+        const firstExecution = state.execute();
+        const secondExecution = state.execute();
+
+        await Promise.resolve();
+
+        second.reject(error);
+        await expect(secondExecution).rejects.toBe(error);
+
+        expect(state.error.value).toBe(error);
+
+        first.resolve(1);
+        await expect(firstExecution).resolves.toBe(1);
+
+        expect(state.error.value).toBe(error);
+        expect(state.result.value).toBeUndefined();
+    });
+
+    it('keeps loading true while outdated requests are still pending', async () => {
+        const first = deferred<number>();
+        const second = deferred<number>();
+
+        const request = vi.fn()
+            .mockImplementationOnce(() => first.promise)
+            .mockImplementationOnce(() => second.promise);
+
+        const state = useAsync(request);
+
+        const firstExecution = state.execute();
+        const secondExecution = state.execute();
+
+        await Promise.resolve();
+
+        second.resolve(2);
+        await expect(secondExecution).resolves.toBe(2);
+
+        expect(state.loading.value).toBe(true);
+
+        first.resolve(1);
+        await expect(firstExecution).resolves.toBe(1);
+
+        expect(state.loading.value).toBe(false);
+    });
+
 });
 
 

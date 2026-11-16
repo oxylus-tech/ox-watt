@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { Model } from "@/adm/model";
-import { ValidationError } from "@/adm/fields/field";
 import type { ValidationIssue, SerializerField } from "@/adm/model.types";
+import { ValidationError } from '@/adm/model.types';
 
 /**
  * Creates a mock serializer field with configurable validation behavior.
