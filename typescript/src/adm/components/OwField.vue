@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, useAttrs, useId, useSlots } from "vue";
 
-import type { Field } from "@/adm/fields/field";
-import type { ValidationIssue } from "@/adm/model.types";
-import type { Widget } from "@/adm/fields/widget";
+import type { Field } from "../fields/field";
+import type { ValidationIssue } from "../model.types";
+import type { Widget } from "../fields/widget";
 
 import { getWidgetProps, resolveWidget } from "./widgets";
 
@@ -137,10 +137,7 @@ function updateValue(value: unknown): void {
             v-for="(_, name) in slots"
             v-slot:[name]="slotProps"
         >
-            <slot
-                :name="name"
-                v-bind="slotProps ?? {}"
-            />
+            <slot :name="name" v-bind="slotProps ?? {}" />
         </template>
     </component>
 </template>

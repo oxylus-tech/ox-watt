@@ -2,7 +2,7 @@ import { defineComponent, h } from "vue";
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
-import OwField from "@/components/OwField.vue";
+import OwField from "@/adm/components/OwField.vue";
 import { StringField } from "@/adm/fields/string";
 
 const TestWidget = defineComponent({

@@ -1,16 +1,7 @@
 import type { Component } from "vue";
 import { KeyedStore } from "@/utils/store";
 
-import type { Widget, WidgetConfig } from "@/adm/fields/widget";
-
-/*import {
-    VAutocomplete,
-    VCheckbox,
-    VSelect,
-    VSwitch,
-    VTextarea,
-    VTextField,
-} from "vuetify/components";*/
+import type { Widget, WidgetConfig } from "../fields/widget";
 
 
 export interface ResolvedWidget extends WidgetConfig {
@@ -32,16 +23,6 @@ export interface WidgetEntry extends ResolvedWidget {
  */
 export const widgetStore = new KeyedStore<string, WidgetEntry>(null, "name");
 
-/*
-widgetStore.setMany([
-    { name: "text", component: VTextField },
-    { name: "textarea", component: VTextarea },
-    { name: "autocomplete", component: VAutocomplete },
-    { name: "select", component: VSelect },
-    { name: "checkbox", component: VCheckbox },
-    { name: "switch", component: VSwitch },
-]);
-*/
 
 /**
  * Resolves a widget definition into a Vue component.

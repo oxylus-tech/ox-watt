@@ -1,9 +1,8 @@
-
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { Model } from "@/adm/model";
-import type { Field } from "@/adm/fields/field";
+import { Model } from "../model";
+import type { Field } from "../fields/field";
 
 import OwField from "./OwField.vue";
 

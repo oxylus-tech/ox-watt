@@ -2,11 +2,11 @@ import { defineComponent, h } from "vue";
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi, beforeAll } from "vitest";
 
-import OWModelFields from "@/components/OwModelFields.vue";
+import OWModelFields from "@/adm/components/OwModelFields.vue";
 import { Model } from "@/adm/model";
 import { StringField } from "@/adm/fields/string";
 
-import type { FieldConfig, FieldSet } from "@/components/OwModelFields.types";
+import type { FieldConfig, FieldSet } from "@/adm/components/OwModelFields.types";
 
 /**
  * Test model used by the component tests.
