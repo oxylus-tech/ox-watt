@@ -32,8 +32,10 @@
         "paths": {
             "@": ["./packages/ox-watt/src/index.ts"],
             "@/*": ["./packages/ox-watt/src/*"],
-            "@ox-watt": ["./packages/ox-watt/src/index.ts"],
-            "@ox-watt/*": ["./packages/ox-watt/src/*"],
+            "ox-watt": ["./packages/ox-watt/src/index.ts"],
+            "ox-watt/*": ["./packages/ox-watt/src/*"],
+            "@ox-watt/content": ["./packages/content/src/index.ts"],
+            "@ox-watt/content/*": ["./packages/content/src/*"],
         },
     },
     "include": [

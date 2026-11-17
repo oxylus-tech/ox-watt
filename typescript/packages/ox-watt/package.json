@@ -13,7 +13,8 @@
         ".": {
             "types": "./dist/types/index.d.ts",
             "import": "./dist/ox-watt.js"
-        }
+        },
+        "./vite.config.base": "./src/vite.config.base.js"
     },
     "scripts": {
         "dev": "vite",
@@ -22,10 +23,15 @@
         "test": "vitest run",
         "test:watch": "vitest"
     },
-    "dependencies": {
-        "lodash-es": "^4.18.1",
+    "peerDependencies": {
         "vue": "^3.5.44",
         "vue-i18n": "^11.4.18",
         "vuetify": "^4.3.3"
+    },
+    "dependencies": {
+        "lodash-es": "^4.18.1"
+    },
+    "devDependencies": {
+        "vite-plugin-vuetify": "^2.1.3"
     }
 }

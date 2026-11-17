@@ -1,0 +1,47 @@
+{
+    "name": "@ox-watt/content",
+    "version": "0.1.0",
+    "description": "Oxylus WebApp Technology Toolkit: content edition",
+    "type": "module",
+    "files": [
+        "dist"
+    ],
+    "main": "./dist/ox-watt-content.js",
+    "module": "./dist/ox-watt-content.js",
+    "types": "./dist/types/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "import": "./dist/ox-watt-content.js"
+        }
+    },
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc --noEmit && tsc -p ../../tsconfig.build.json && vite build",
+        "build-src": "tsc -p ../../tsconfig.build.json && vite build",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "peerDependencies": {
+        "ox-watt": "workspace:*",
+        "vue": "^3.5.44",
+        "vuetify": "^4.3.3"
+    },
+    "dependencies": {
+        "@tiptap/core": "^3.12.1",
+        "@tiptap/extension-link": "^2.3.0",
+        "@tiptap/extension-table": "^2.3.0",
+        "@tiptap/extension-table-cell": "^2.3.0",
+        "@tiptap/extension-table-header": "^2.3.0",
+        "@tiptap/extension-table-row": "^2.3.0",
+        "@tiptap/extension-text-align": "^2.3.0",
+        "@tiptap/extension-underline": "^2.3.0",
+        "@tiptap/pm": "^2.3.0",
+        "@tiptap/starter-kit": "^2.3.0",
+        "@tiptap/vue-3": "^2.3.0",
+        "lodash-es": "^4.18.1"
+    },
+    "devDependencies": {
+        "vite-plugin-vuetify": "^2.1.3"
+    }
+}
