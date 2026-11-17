@@ -1,9 +1,8 @@
 {
     "entryPoints": [
-        "src/adm/index.ts",
-        "src/i18n/index.ts"
+        "packages/ox-watt/src/index.ts",
     ],
-    "entryPointStrategy": "expand",
+    "entryPointStrategy": "resolve",
     "plugin": [
         "typedoc-plugin-markdown"
     ],

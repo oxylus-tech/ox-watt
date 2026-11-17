@@ -1,34 +1,48 @@
 {
-  "compilerOptions": {
-    "noEmit": false,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "jsx": "preserve",
-    "jsxImportSource": "vue",
+    "compilerOptions": {
+        "noEmit": false,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "jsx": "preserve",
+        "jsxImportSource": "vue",
 
-    "noImplicitThis": true,
-    "strict": true,
+        "strict": true,
+        "noImplicitThis": true,
+        "verbatimModuleSyntax": true,
 
-    "verbatimModuleSyntax": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
 
-    "target": "ESNext",
-    "useDefineForClassFields": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "strictNullChecks": false,
 
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "strictNullChecks": false,
+        "target": "ESNext",
+        "useDefineForClassFields": true,
 
-    "lib": [
-        "esnext",
-        "dom"
-    ],
+        "lib": [
+            "esnext",
+            "dom"
+        ],
 
-    "baseUrl": "./",
-    "paths": {
-        "@ox-watt": ["./packages/ox-watt/src/*"],
-        "*": ["node_modules/*"]
+        "baseUrl": "./",
+        "paths": {
+            "@": ["./packages/ox-watt/src/index.ts"],
+            "@/*": ["./packages/ox-watt/src/*"],
+            "@ox-watt": ["./packages/ox-watt/src/index.ts"],
+            "@ox-watt/*": ["./packages/ox-watt/src/*"],
+        },
     },
-  }
+    "include": [
+        "packages/*/src/**/*.ts",
+        "packages/*/src/**/*.tsx",
+        "packages/*/src/**/*.vue"
+    ],
+    "exclude": [
+        "**/node_modules/**",
+        "**/dist/**"
+    ]
 }

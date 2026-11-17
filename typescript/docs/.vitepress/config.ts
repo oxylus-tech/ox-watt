@@ -4,7 +4,7 @@ import { withSidebar } from 'vitepress-sidebar'
 
 const vitePressOptions = {
     title: 'Ox-Watt',
-    description: 'Reusable tools and libraries for application development.',
+    description: 'WebApp Technology Toolkit.',
 
     ignoredDeadLinks: true,
     themeConfig: {

@@ -75,7 +75,7 @@ export type ReactiveRepositories<TRepositories extends Repositories> = {
 export interface ReactiveDbRepository<
     TModel extends Model,
     TApi extends IApiClient<TModel>,
-    TDatabase extends Database,
+    TDatabase extends Database<any>,
     TModelClass extends ModelClass<TModel> = ModelClass<TModel>,
     TRepository extends Repository<TModel, TApi, TModelClass> = Repository<TModel, TApi, TModelClass>
 > extends ReactiveRepository<TModel, TApi, TModelClass, TRepository>

@@ -194,7 +194,7 @@ export function useFetch<TResult>(
         watch(
             sources,
             () => {
-                void result.execute().catch(() => undefined);
+                void result.execute().catch((): undefined => undefined);
             },
             {
                 immediate: options.immediate ?? false,
