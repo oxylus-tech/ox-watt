@@ -28,7 +28,7 @@ export default defineConfig({
     plugins: [
         vue(),
         vuetify({ autoImport: true }),
-        oxWatt(),
+        oxWatt({ sfc: true }),
     ],
 
     optimizeDeps: {

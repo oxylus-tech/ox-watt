@@ -14,9 +14,9 @@
             "types": "./dist/types/index.d.ts",
             "import": "./dist/lib.js"
         },
-        "package": {
+        "./package": {
             "types": "./dist/package.d.ts",
-            "import": "./dist/package.js",
+            "import": "./dist/package.js"
         }
     },
     "scripts": {

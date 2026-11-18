@@ -235,32 +235,34 @@ export function oxWatt(options: OxWattPluginOptions = {}): Plugin {
 
                 sfcComponents = await discoverSfcComponents(catalogueFile);
 
-                this.addWatchFile(catalogueFile);
+                if(sfcComponents) {
+                    this.addWatchFile(catalogueFile);
 
-                sfcModules.clear();
+                    sfcModules.clear();
 
-                for (const component of sfcComponents) {
-                    const moduleId = `${SFC_PUBLIC_ID}:${component.name}`;
+                    for (const component of sfcComponents) {
+                        const moduleId = `${SFC_PUBLIC_ID}:${component.name}`;
 
-                    sfcModules.set(
-                        moduleId,
-                        createSfcModule(component, config.root),
-                    );
+                        sfcModules.set(
+                            moduleId,
+                            createSfcModule(component, config.root),
+                        );
 
-                    this.addWatchFile(component.source);
+                        this.addWatchFile(component.source);
+
+                        this.emitFile({
+                            type: 'chunk',
+                            id: moduleId,
+                            fileName: `${resolved.componentsDir}/${component.name}.js`,
+                        });
+                    }
 
                     this.emitFile({
                         type: 'chunk',
-                        id: moduleId,
-                        fileName: `${resolved.componentsDir}/${component.name}.js`,
+                        id: SFC_PUBLIC_ID,
+                        fileName: 'sfc.js',
                     });
                 }
-
-                this.emitFile({
-                    type: 'chunk',
-                    id: SFC_PUBLIC_ID,
-                    fileName: 'sfc.js',
-                });
             }
         },
 
@@ -421,14 +423,17 @@ function createPackageModule(
  * @returns Discovered components.
  * @throws If the catalogue is invalid or a component declaration is malformed.
  */
-async function discoverSfcComponents(filename: string): Promise<SfcComponent[]> {
-    const source = await fs.readFile(filename, 'utf-8');
-
+async function discoverSfcComponents(filename: string): Promise<SfcComponent[]|null> {
+    let source: string;
     let catalogue: unknown;
 
     try {
+        source = await fs.readFile(filename, 'utf-8');
         catalogue = JSON.parse(source);
     } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT')
+            return null;
+
         throw new Error(
             `Cannot parse SFC catalogue "${filename}": ${
                 error instanceof Error ? error.message : String(error)
