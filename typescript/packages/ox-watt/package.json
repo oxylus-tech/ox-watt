@@ -14,12 +14,17 @@
             "types": "./dist/types/index.d.ts",
             "import": "./dist/ox-watt.js"
         },
-        "./vite.config.base": "./src/vite.config.base.js"
+        "./package": {
+            "types": "./dist/package.d.ts",
+            "import": "./dist/package.js"
+        },
+        "./vite.config.base": "./dist/vite.config.base.js",
+        "./vite-plugin": "./dist/vite-plugin.js"
     },
     "scripts": {
         "dev": "vite",
-        "build": "tsc --noEmit && tsc -p ../../tsconfig.build.json && vite build",
-        "build-src": "tsc -p ../../tsconfig.build.json && vite build",
+        "build": "tsc --noEmit && vite build && tsc -p ./tsconfig.build.json",
+        "build-src": "vite build && tsc -p ./tsconfig.build.json",
         "test": "vitest run",
         "test:watch": "vitest"
     },
@@ -29,6 +34,7 @@
         "vuetify": "^4.3.3"
     },
     "dependencies": {
+        "glob": "^14.0.6",
         "lodash-es": "^4.18.1"
     },
     "devDependencies": {

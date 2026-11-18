@@ -1,16 +1,28 @@
 {
-    "extends": "./tsconfig.json",
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "noEmit": false,
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+
+        "rootDir": "./src",
+        "outDir": "./dist",
         "declaration": true,
-        "declarationMap": true,
-        "emitDeclarationOnly": true,
-        "outDir": "dist/types"
+        "declarationDir": "./dist/types",
+        "emitDeclarationOnly": false,
+
+        "noEmit": false,
+        "composite": false,
+        "skipLibCheck": true
     },
+    "include": [
+        "src/vite-plugin.ts",
+        "src/vite.config.base.ts"
+    ],
     "exclude": [
-        "**/node_modules/**",
-        "**/tests/**",
+        "node_modules",
+        "dist",
         "**/*.test.ts",
-        "**/dist/**"
+        "**/*.spec.ts"
     ]
 }

@@ -85,6 +85,13 @@ export class I18nManager {
     private localeLoads = new Map<string, Promise<void>>(); 
 
     /**
+     * Tracks locale resources that are currently loading or have been loaded.
+     *
+     * The key combines the locale and the resource key.
+     */
+    private resourceLoads = new Map<string, Promise<void>>();
+
+    /**
      * Returns the Vue I18n instance to install as a Vue plugin.
      *
      * @throws Error if the manager has not been initialized.
@@ -114,22 +121,34 @@ export class I18nManager {
     /**
      * Registers locale loader groups.
      *
-     * Duplicate groups are ignored by reference.
+     * When the manager is already initialized, newly registered resources
+     * are immediately loaded for the fallback and current locales.
      *
-     * Registration must happen before initialization.
-     *
-     * @param loaders Locale loader groups to register.
+     * @param loaders - Locale loader groups to register.
+     * @returns A promise resolved when the relevant resources are loaded.
      */
-    register(loaders: AppLocaleLoaders[]): void {
-        if (this.instance) {
-            throw new Error('Locale loaders must be registered before initialization.');
-        }
+    async register(loaders: AppLocaleLoaders[]): Promise<void> {
+        const knownLoaders = new Set(this.loaders);
+        const newLoaders = loaders.filter(loader => {
+            if (knownLoaders.has(loader))
+                return false;
 
-        for (const group of loaders) {
-            if (!this.loaders.includes(group)) {
-                this.loaders.push(group);
-            }
-        }
+            knownLoaders.add(loader);
+            return true;
+        });
+
+        if (newLoaders.length === 0)
+            return;
+
+        this.loaders.push(...newLoaders);
+
+        if (!this.instance)
+            return;
+
+        const locales = new Set([ this.fallbackLocale!, this.locale, ]);
+        await Promise.all(
+            [...locales].map(locale => this.loadLocaleResources(locale)),
+        );
     }
 
     /**
@@ -223,25 +242,50 @@ export class I18nManager {
     }
 
     /**
-     * Loads and merges the resources for a locale.
+     * Loads all resources registered for a locale.
      *
-     * @param locale Locale whose resources should be loaded.
+     * @param locale - The locale whose resources must be loaded.
+     * @returns A promise resolving when all resources have been loaded.
      */
     private async loadLocaleResources(locale: string): Promise<void> {
-        const instance = this.getInstance();
-
-        const resources: LocaleResource[] = [
+        const resources = [
             ...getStaticLocaleResources(this.loaders, locale),
             ...getDomLocaleResources(locale),
         ];
 
-        const messages = await Promise.all(
-            resources.map(resource => resource.load()),
+        const uniqueResources = new Map(
+            resources.map(resource => [resource.key, resource])
         );
 
-        for (const message of messages) {
-            instance.global.mergeLocaleMessage(locale, message);
-        }
+        await Promise.all(
+            [...uniqueResources.values()].map(resource => this.loadLocaleResource(locale, resource))
+        );
+    }
+
+    /**
+     * Loads and merges a locale resource if it has not already been loaded.
+     *
+     * @param locale - Target locale.
+     * @param resource - Resource to load.
+     */
+    private async loadLocaleResource(locale: string, resource: LocaleResource): Promise<void> {
+        const key = `${locale}:${resource.key}`;
+        const existingLoad = this.resourceLoads.get(key);
+
+        if (existingLoad)
+            return existingLoad;
+
+        const load = resource.load()
+            .then(messages => {
+                this.getInstance().global.mergeLocaleMessage(locale, messages);
+            })
+            .catch(error => {
+                this.resourceLoads.delete(key);
+                throw error;
+            });
+
+        this.resourceLoads.set(key, load);
+        return load;
     }
 
     /**

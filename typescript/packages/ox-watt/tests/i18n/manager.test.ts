@@ -173,15 +173,43 @@ describe('I18nManager', () => {
         })).rejects.toThrow();
     });
 
-    it('does not allow registering loaders after initialization', async () => {
-        const manager = new I18nManager();
+    it('allows registering loaders after initialization', async () => {
+        const manager = new I18nManager()
 
         await manager.initialize({
             fallbackLocale: 'en',
-        });
+            locale: 'en',
+        })
 
-        expect(() => manager.register([{}])).toThrow();
-    });
+        const loaders: AppLocaleLoaders = {
+            './locales/messages.en.json': vi.fn(async () => ({
+                greeting: 'Hello',
+            })),
+        }
+
+        expect(() => manager.register([loaders])).not.toThrow()
+    })
+
+    it('loads newly registered resources for an initialized locale', async () => {
+        const manager = new I18nManager()
+
+        await manager.initialize({
+            fallbackLocale: 'en',
+            locale: 'en',
+        })
+
+        const loader = vi.fn(async () => ({
+            greeting: 'Hello',
+        }))
+
+        manager.register([{
+            './locales/messages.en.json': loader,
+        }])
+
+        await manager.loadLocale('en')
+
+        expect(loader).toHaveBeenCalledOnce()
+    })
 
     it('changes the active locale', async () => {
         const manager = new I18nManager();

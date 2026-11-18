@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { watch } from "vue";
 import { EditorContent } from "@tiptap/vue-3";
 
 import { useRichTextEditor } from "../composables/editor";

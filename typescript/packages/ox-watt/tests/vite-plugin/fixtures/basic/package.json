@@ -1,0 +1,6 @@
+{
+    "name": "test-package",
+    "exports": {
+        "./package": "./dist/package.js"
+    }
+}
