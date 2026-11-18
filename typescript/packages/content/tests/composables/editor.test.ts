@@ -1,9 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { defineComponent, h, nextTick, ref } from "vue";
 import { mount } from "@vue/test-utils";
 
-import { useRichTextEditor, useRichTextContext } from "@ox-watt/content/composables/editor";
-import type { RichTextContext } from "@ox-watt/content/types/editor";
+import {
+    useRichTextEditor,
+    useRichTextContext
+} from "@ox-watt/content/composables/editor";
+import type { RichTextContext, EditorToolset } from "@ox-watt/content/types/editor";
 
 import {
     AnotherTestExtension,
@@ -13,6 +16,21 @@ import {
 
 
 describe("useRichTextEditor", () => {
+    it("should include StarterKit by default", () => {
+        const wrapper = mount({
+            setup() {
+                const context = useRichTextEditor();
+
+                return { context };
+            },
+            template: "<div></div>",
+        });
+
+        expect(wrapper.vm.context.editor.value).not.toBeNull();
+
+        wrapper.unmount();
+    });
+
     it("should create the editor only after the component is mounted", () => {
         let context: RichTextContext | undefined;
         let editorAtSetup: RichTextContext["editor"]["value"] = null;
@@ -162,7 +180,7 @@ describe("useRichTextEditor", () => {
             setup() {
                 context = useRichTextEditor({
                     ...TestEditorOptions,
-                    watch: true,
+                    watchToolsets: true,
                 });
 
                 return () => h("div");
@@ -190,7 +208,7 @@ describe("useRichTextEditor", () => {
             setup() {
                 context = useRichTextEditor({
                     ...TestEditorOptions,
-                    watch: true,
+                    watchToolsets: true,
                     toolsets: [TestToolset],
                 });
 
@@ -230,7 +248,7 @@ describe("useRichTextEditor", () => {
             setup() {
                 context = useRichTextEditor({
                     ...TestEditorOptions,
-                    watch: true,
+                    watchToolsets: true,
                 });
 
                 return () => h("div");
@@ -298,7 +316,7 @@ describe("useRichTextEditor", () => {
             setup() {
                 context = useRichTextEditor({
                     ...TestEditorOptions,
-                    watch: true,
+                    watchToolsets: true,
                 });
 
                 return () => h("div", [
@@ -398,3 +416,191 @@ describe("useRichTextContext", () => {
     });
 });
 
+
+describe("useRichTextEditor commands", () => {
+    it("should expose the command registry", () => {
+        let context!: RichTextContext;
+
+        mount({
+            setup() {
+                context = useRichTextEditor();
+
+                return () => null;
+            },
+        });
+
+        expect(context.commands).toBeDefined();
+        expect(context.commands.chain).toBeTypeOf("function");
+        expect(context.commands.edit).toBeTypeOf("function");
+    });
+
+    it("should initialize built-in commands before mounting the editor", () => {
+        let context!: RichTextContext;
+
+        mount({
+            setup() {
+                context = useRichTextEditor();
+
+                expect(context.commands.chain).toBeTypeOf("function");
+                expect(context.commands.edit).toBeTypeOf("function");
+
+                return () => null;
+            },
+        });
+
+        expect(context.editor.value).not.toBeNull();
+    });
+
+    it("should register commands provided by a toolset", () => {
+        let context!: RichTextContext;
+
+        const toolset: EditorToolset = {
+            name: "test",
+            extensions: [],
+            commands: {
+                testCommand: (ctx) => ctx.editor.value !== null,
+            },
+        };
+
+        mount({
+            setup() {
+                context = useRichTextEditor();
+                context.register(toolset);
+
+                return () => null;
+            },
+        });
+
+        expect(context.commands.testCommand()).toBe(true);
+    });
+
+    it("should pass the editor context to toolset commands", () => {
+        let context!: RichTextContext;
+        const handler = vi.fn((ctx: RichTextContext) => ctx);
+
+        const toolset: EditorToolset = {
+            name: "test",
+            extensions: [],
+            commands: {
+                testCommand: handler,
+            },
+        };
+
+        mount({
+            setup() {
+                context = useRichTextEditor();
+                context.register(toolset);
+
+                return () => null;
+            },
+        });
+
+        expect(context.commands.testCommand()).toBe(context);
+        expect(handler).toHaveBeenCalledWith(context);
+    });
+
+    it("should unregister toolset commands manually", () => {
+        let context!: RichTextContext;
+        let unregister!: () => void;
+
+        const toolset: EditorToolset = {
+            name: "test",
+            extensions: [],
+            commands: {
+                testCommand: () => true,
+            },
+        };
+
+        mount({
+            setup() {
+                context = useRichTextEditor();
+                unregister = context.register(toolset);
+
+                return () => null;
+            },
+        });
+
+        expect(context.commands.testCommand()).toBe(true);
+
+        unregister();
+
+        expect(context.commands.testCommand).toBeUndefined();
+    });
+
+    it("should unregister toolset commands when the owner component is unmounted", () => {
+        let context!: RichTextContext;
+
+        const toolset: EditorToolset = {
+            name: "test",
+            extensions: [],
+            commands: {
+                testCommand: () => true,
+            },
+        };
+
+        const wrapper = mount({
+            setup() {
+                context = useRichTextEditor();
+                context.register(toolset);
+
+                return () => null;
+            },
+        });
+
+        expect(context.commands.testCommand()).toBe(true);
+
+        wrapper.unmount();
+
+        expect(context.commands.testCommand).toBeUndefined();
+    });
+
+    it("should keep built-in commands when a toolset is unregistered", () => {
+        let context!: RichTextContext;
+        let unregister!: () => void;
+
+        const toolset: EditorToolset = {
+            name: "test",
+            extensions: [],
+            commands: {
+                testCommand: () => true,
+            },
+        };
+
+        mount({
+            setup() {
+                context = useRichTextEditor();
+                unregister = context.register(toolset);
+
+                return () => null;
+            },
+        });
+
+        unregister();
+
+        expect(context.commands.testCommand).toBeUndefined();
+        expect(context.commands.chain).toBeTypeOf("function");
+        expect(context.commands.edit).toBeTypeOf("function");
+    });
+
+    it("should keep the command registry stable when the editor is reset", async () => {
+        let context!: RichTextContext;
+
+        mount({
+            setup() {
+                context = useRichTextEditor();
+
+                return () => null;
+            },
+        });
+
+        const commands = context.commands;
+        const initialEditor = context.editor.value;
+
+        context.reset();
+
+        await nextTick();
+
+        expect(context.commands).toBe(commands);
+        expect(context.editor.value).not.toBe(initialEditor);
+    });
+});

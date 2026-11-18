@@ -1,9 +1,7 @@
 import type { AnyExtension, Editor, EditorOptions, JSONContent } from "@tiptap/core";
+import type { Ref, ShallowRef, } from "vue";
 
-import type {
-    Ref,
-    ShallowRef,
-} from "vue";
+import type { RichTextCommands, RichTextCommandDefinitions } from './commands.ts'
 
 /**
  * Shared configuration for rich text editors.
@@ -49,7 +47,7 @@ export interface RichTextModelOptions {
      * HTML content is expected when using string values.
      * JSON content is supported for future format-specific synchronization.
      */
-    value: Ref<string | JSONContent | null>;
+    value: Ref<string | null>;
 
     /**
      * Automatically synchronize external model changes with the editor.
@@ -75,6 +73,13 @@ export interface RichTextEditorOptions extends RichTextEditorConfig {
  * Properties accepted by the OwRichTextEditor component.
  */
 export interface OwRichTextEditorProps extends RichTextEditorConfig {
+    /**
+     * Content synchronized with the editor through v-model.
+     *
+     * The current implementation uses HTML.
+     */
+    modelValue?: string | null;
+
     /**
      * Whether the editor is disabled.
      *
@@ -126,6 +131,11 @@ export interface RichTextContext {
      * Does nothing if the editor has not been initialized.
      */
     reset(): void;
+
+    /**
+     * Registered editor commands.
+     */
+    commands: RichTextCommands;
 }
 
 /**
@@ -141,5 +151,9 @@ export interface EditorToolset {
      * TipTap extensions required by this toolset.
      */
     extensions: AnyExtension[];
-}
 
+    /**
+     * Commands contributed by this toolset.
+     */
+    commands?: RichTextCommandDefinitions;
+}

@@ -1,0 +1,80 @@
+{
+    "ow-content": {
+        "toolsets": {
+            "basic": {
+                "title": "Formatting",
+                "help": "Basic text formatting and layout options.",
+                "ariaLabel": "Text formatting toolbar",
+                "description": "Provides text formatting, paragraph alignment and list controls.",
+                "actions": {
+                    "bold": {
+                        "title": "Bold",
+                        "help": "Make the selected text bold.",
+                        "ariaLabel": "Toggle bold formatting",
+                        "description": "Applies or removes bold formatting."
+                    },
+                    "italic": {
+                        "title": "Italic",
+                        "help": "Italicize the selected text.",
+                        "ariaLabel": "Toggle italic formatting",
+                        "description": "Applies or removes italic formatting."
+                    },
+                    "underline": {
+                        "title": "Underline",
+                        "help": "Underline the selected text.",
+                        "ariaLabel": "Toggle underline formatting",
+                        "description": "Applies or removes underline formatting."
+                    },
+                    "strike": {
+                        "title": "Strikethrough",
+                        "help": "Strike through the selected text.",
+                        "ariaLabel": "Toggle strikethrough formatting",
+                        "description": "Applies or removes strikethrough formatting."
+                    },
+                    "alignLeft": {
+                        "title": "Align left",
+                        "help": "Align the paragraph to the left.",
+                        "ariaLabel": "Align paragraph left",
+                        "description": "Sets the paragraph alignment to the left."
+                    },
+                    "alignCenter": {
+                        "title": "Align center",
+                        "help": "Center the paragraph.",
+                        "ariaLabel": "Align paragraph center",
+                        "description": "Sets the paragraph alignment to the center."
+                    },
+                    "alignRight": {
+                        "title": "Align right",
+                        "help": "Align the paragraph to the right.",
+                        "ariaLabel": "Align paragraph right",
+                        "description": "Sets the paragraph alignment to the right."
+                    },
+                    "bulletList": {
+                        "title": "Bulleted list",
+                        "help": "Create or remove a bulleted list.",
+                        "ariaLabel": "Toggle bulleted list",
+                        "description": "Creates or removes a bulleted list."
+                    },
+                    "orderedList": {
+                        "title": "Numbered list",
+                        "help": "Create or remove a numbered list.",
+                        "ariaLabel": "Toggle numbered list",
+                        "description": "Creates or removes a numbered list."
+                    },
+                    "undo": {
+                        "title": "Undo",
+                        "help": "Undo the last change.",
+                        "ariaLabel": "Undo",
+                        "description": "Reverts the last editor operation."
+                    },
+                    "redo": {
+                        "title": "Redo",
+                        "help": "Redo the previously undone change.",
+                        "ariaLabel": "Redo",
+                        "description": "Restores the previously undone editor operation."
+                    }
+                }
+            }
+        }
+    }
+}

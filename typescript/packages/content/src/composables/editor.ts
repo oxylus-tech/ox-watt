@@ -1,18 +1,8 @@
 import { Editor, type AnyExtension, type EditorOptions, type JSONContent, } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 
-import {
-    markRaw,
-    onBeforeUnmount,
-    onMounted,
-    provide,
-    inject,
-    shallowReactive,
-    shallowRef,
-    watch,
-    type InjectionKey,
-    type ShallowRef
-} from "vue";
+import { markRaw, onBeforeUnmount, onMounted, provide, inject, shallowReactive, shallowRef, watch } from "vue";
+import type { InjectionKey, ShallowRef } from "vue";
 
 import type {
     EditorToolset,
@@ -20,6 +10,8 @@ import type {
     RichTextEditorOptions,
     RichTextModelOptions,
 } from "../types/editor";
+import { useRegistration } from "ox-watt";
+import { useCommands } from "./commands";
 
 
 /**
@@ -46,6 +38,10 @@ export function useRichTextEditor(
         ? useRichTextModel(editor, options.model)
         : null;
 
+    let context: RichTextContext;
+    const commandManager = useCommands(() => context);
+    const registrations = new Set<() => void>();
+
     const toolsets = shallowReactive(
         new Map<string, EditorToolset>(),
     );
@@ -58,7 +54,7 @@ export function useRichTextEditor(
      * @returns The complete extension collection.
      */
     function getExtensions(): AnyExtension[] {
-        const extensions: AnyExtensions = [
+        const extensions: AnyExtension[] = [
             ...(options.starterKit !== false ? [StarterKit] : []),
             ...(options.extensions ?? [])
         ];
@@ -111,57 +107,50 @@ export function useRichTextEditor(
     }
 
     /**
-     * Register a toolset.
+     * Registers an editor toolset.
      *
-     * @param toolset Toolset to register.
-     * @param unmount Automatically unregister on component unmount.
-     * @returns A function to unregister the toolset.
+     * The toolset and its commands are automatically unregistered when the
+     * current Vue scope is disposed, unless explicitly disabled.
+     *
+     * @param toolset - Toolset to register.
+     * @param autoDispose - Whether to unregister the toolset when the current Vue scope is disposed.
+     * @returns A function that unregisters the toolset.
+     * @throws Error if a toolset with the same name is already registered.
      */
-    function register(
-        toolset: EditorToolset,
-        unmount = true,
-    ): () => void {
-        const existing = toolsets.get(toolset.name);
-
-        if (existing) {
-            if (existing === toolset) {
-                return () => undefined;
-            }
-
-            throw new Error(
-                `A toolset named "${toolset.name}" is already registered.`,
-            );
+    function register(toolset: EditorToolset, autoDispose = true): () => void {
+        if (toolsets.has(toolset.name)) {
+            throw new Error(`A toolset named "${toolset.name}" is already registered.`);
         }
 
-        toolsets.set(toolset.name, toolset);
+        let unregister!: () => void;
 
-        /**
-         * Remove the registered toolset.
-         */
-        function unregister(): void {
-            if (toolsets.get(toolset.name) !== toolset) {
-                return;
-            }
+        unregister = useRegistration(() => {
+            const unregisterCommands = toolset.commands
+                ? commandManager.register(toolset.commands, false)
+                : () => {};
 
-            toolsets.delete(toolset.name);
-        }
+            toolsets.set(toolset.name, toolset);
 
-        if (unmount) {
-            onBeforeUnmount(unregister);
-        }
+            return () => {
+                unregisterCommands();
+                toolsets.delete(toolset.name);
+                registrations.delete(unregister);
+            };
+        }, autoDispose);
+
+        registrations.add(unregister);
 
         return unregister;
     }
 
     // Register initial toolsets.
     for (const toolset of options.toolsets ?? []) {
-        if (toolsets.has(toolset.name)) {
+        if (toolsets.has(toolset.name))
             throw new Error(
                 `Duplicate toolset name "${toolset.name}".`,
             );
-        }
 
-        toolsets.set(toolset.name, toolset);
+        register(toolset, false)
     }
 
     // Create the editor only after the component has been mounted.
@@ -179,16 +168,20 @@ export function useRichTextEditor(
 
     // Destroy the editor when its owner is unmounted.
     onBeforeUnmount(() => {
+        for (const unregister of [...registrations])
+            unregister();
+
         editor.value?.destroy();
         editor.value = null;
         toolsets.clear();
     });
 
-    const context: RichTextContext = {
+    context = {
         editor,
         toolsets,
         register,
         reset,
+        commands: commandManager.commands
     };
 
     provide(richTextContextKey, context);
