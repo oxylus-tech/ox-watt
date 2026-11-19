@@ -1,7 +1,7 @@
-ox_watt.django.files.processors
+ox_watt.files.processors
 ================================
 
-.. automodule:: ox_watt.django.files.processors
+.. automodule:: ox_watt.files.processors
    :show-inheritance:
    :members:
 

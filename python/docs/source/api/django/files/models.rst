@@ -1,6 +1,6 @@
-ox_watt.django.files.models
+ox_watt.files.models
 ===============================
 
-.. automodule:: ox_watt.django.files.models
+.. automodule:: ox_watt.files.models
    :show-inheritance:
    :members:

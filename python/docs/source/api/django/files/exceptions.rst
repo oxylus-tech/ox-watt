@@ -1,7 +1,7 @@
-ox_watt.django.files.exceptions
+ox_watt.files.exceptions
 ================================
 
-.. automodule:: ox_watt.django.files.exceptions
+.. automodule:: ox_watt.files.exceptions
    :show-inheritance:
    :members:
 

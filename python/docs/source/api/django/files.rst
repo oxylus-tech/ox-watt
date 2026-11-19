@@ -1,8 +1,8 @@
-ox_watt.django.files
+ox_watt.files
 =====================
 
-.. automodule:: ox_watt.django.files
-.. public-api:: ox_watt.django.files
+.. automodule:: ox_watt.files
+.. public-api:: ox_watt.files
 
 
 .. toctree::

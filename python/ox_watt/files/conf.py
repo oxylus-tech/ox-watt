@@ -28,9 +28,9 @@ class FileSettings(conf.Settings):
     """ Size for thumbnails """
 
     PROCESSORS: list[str] = [
-        "ox_watt.django.files.processors.ImageProcessor",
-        "ox_watt.django.files.processors.PDFProcessor",
-        "ox_watt.django.files.processors.LibreOfficeProcessor",
+        "ox_watt.files.processors.ImageProcessor",
+        "ox_watt.files.processors.PDFProcessor",
+        "ox_watt.files.processors.LibreOfficeProcessor",
     ]
     """ List of file processors. """
 

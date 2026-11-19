@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ox_watt.django.models import UUID
 from ox_watt.django.models.tree import TreeNode as _TreeNode
-from ox_watt.django.files.models import BaseFile, BaseFolder
+from ox_watt.files.models import BaseFile, BaseFolder
 
 
 __all__ = ("Value", "TreeNode", "OwnedTreeNode", "File", "Folder", "SerializerTestModel", "Child", "Parent")

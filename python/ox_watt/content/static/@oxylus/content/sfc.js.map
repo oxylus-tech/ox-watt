@@ -1,0 +1,1 @@
+{"version":3,"mappings":";++BAAA,OAAO,mBAA+B,sCACtC,OAAO,oBAAgC,wCACvC,OAAO,gBAA4B,oCACnC,OAAO,oBAAgC","names":[],"ignoreList":[],"sources":["../src/sfc.ts"],"sourcesContent":["import('./components/OxRichEditor.vue')\nimport('./components/OxBlockEditor.vue')\nimport('./components/OxMessage.vue')\nimport('./components/OxMessageList.vue')\n"],"file":"sfc.js"}

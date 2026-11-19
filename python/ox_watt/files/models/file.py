@@ -76,7 +76,7 @@ class BaseFile(Described, Timestamped, UUID):
     Settings
     --------
 
-    The model uses by default the :py:attr:`~ox_watt.django.files.conf.files_settings`. However
+    The model uses by default the :py:attr:`~ox_watt.files.conf.files_settings`. However
     you might want to integrate your own FileSettings instance by assigning :py:attr:`_settings`.
 
     At deletion, related files and previews are deleted based on ``.conf.files_settings`` (``CLEAR_FILES_ON_DELETE=True`` option).

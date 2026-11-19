@@ -235,8 +235,9 @@ export function oxWatt(options: OxWattPluginOptions = {}): Plugin {
 
                 sfcComponents = await discoverSfcComponents(catalogueFile);
 
+                this.addWatchFile(catalogueFile);
+
                 if(sfcComponents) {
-                    this.addWatchFile(catalogueFile);
 
                     sfcModules.clear();
 
