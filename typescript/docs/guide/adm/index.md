@@ -100,4 +100,3 @@ We will progressively build on these models to demonstrate validation, repositor
 ## API reference
 
 For detailed information about exported classes, interfaces, functions and types, see the [ADM API reference](/api/).
-

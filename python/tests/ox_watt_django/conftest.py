@@ -1,6 +1,5 @@
 import pytest
 
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User, Group
 
 
@@ -53,4 +52,3 @@ def agent(user):
 @pytest.fixture
 def agent_1(user_1):
     return user_1.agent
-

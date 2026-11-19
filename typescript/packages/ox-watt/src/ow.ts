@@ -39,4 +39,3 @@ export const ow = {
 }
 
 const packageManager = new PackageManager()
-

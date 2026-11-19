@@ -90,7 +90,7 @@ const widgetBindings = computed<Record<string, unknown>>(() => {
         ...(props.field.constructor as typeof Field).getRules(),
         ...(props.rules ?? [])
     ]
-    
+
     const initialProps = {
         ...(resolvedWidget?.props),
         id: inputId.value,

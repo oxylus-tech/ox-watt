@@ -166,4 +166,3 @@ export class Enum<T extends EnumDefinition = EnumDefinition> {
         return this.label(prop)
     }
 }
-

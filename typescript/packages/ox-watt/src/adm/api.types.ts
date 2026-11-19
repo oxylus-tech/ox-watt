@@ -53,7 +53,7 @@ export interface ApiEndpoint extends Omit<RawApiEndpoint, "responseSchema"> {
  */
 export interface ApiEndpoints {
     [key: string]: ApiEndpoint | undefined
-    
+
     /** Endpoint used to retrieve a collection. */
     list?: ApiEndpoint
 
@@ -77,13 +77,13 @@ export interface ApiEndpoints {
 export interface ApiOptions extends Omit<ApiRequest, "path"> {
     // TODO: real option sub-type support on ApiClient
     [key: string]: unknown;
-    
+
     /** Object id **/
     id?: unknown;
 
     /** Optional resource path, defaults to provided endpoint one. **/
     path?: string;
-    
+
     /** Explicit endpoint path overriding configured endpoints. */
     endpoint?: string;
 
@@ -98,14 +98,14 @@ export interface ApiOptions extends Omit<ApiRequest, "path"> {
 
 /**
  * Maps internal metadata to response path.
- * 
+ *
  * This allows the ApiClient to extract metadata as pagination, etc.
  */
 export interface MetadataConfig {
     [key: string]: string|undefined;
     /**
      * Path to the collection of items in the response.
-     * The path is related to the root object returned by the server. 
+     * The path is related to the root object returned by the server.
      */
     dataKey?: string;
 }
@@ -123,7 +123,7 @@ export interface ApiResult<TModel extends Model = Model, TRequest = ApiRequest, 
 
     /** Resulting items. */
     items?: TModel[] | ShallowRef<TModel>[] | null;
-    
+
     /** Response data. */
     data: unknown;
 

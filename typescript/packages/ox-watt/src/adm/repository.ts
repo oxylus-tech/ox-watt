@@ -51,7 +51,7 @@ export type Repositories = Record<string, AnyRepository>;
 export type RepositoryModel<TRepository> =
     TRepository extends Repository<infer TModel> ? TModel : never;
 
-/** 
+/**
  * Extracts the api type handled by a repository.
  */
 export type RepositoryApi<TRepository> =
@@ -225,7 +225,7 @@ export class Repository<
      * Deserializes model data, providing the repository as context.
      *
      * Note: the model view is returned on save.
-     * 
+     *
      * @param input The raw model data to deserialize.
      * @param options Options controlling the deserialization process.
      * @returns The deserialized model instance.

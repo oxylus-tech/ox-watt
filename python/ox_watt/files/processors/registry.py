@@ -55,7 +55,7 @@ class Registry:
         if isinstance(file_or_stream, (str, Path)):
             return magic.from_file(file_or_stream, mime=True)
 
-        buffer = file_or_stream.read(ox_files_settings.MAGIC_BUFFER)
+        buffer = file_or_stream.read(files_settings.MAGIC_BUFFER)
         return magic.from_buffer(buffer, mime=True)
 
     def get(self, mime_type: str) -> Processor | None:

@@ -1,11 +1,10 @@
-
 import pytest
 from django.db import IntegrityError
 from rest_framework.exceptions import PermissionDenied
 
 from tests.django_project.testapp.models import Child, Parent
 from tests.django_project.testapp.serializers import ChildSerializer, ParentSerializer
-from ox_watt.django.serializers import NestedSerializer, NestedModelSerializer
+from ox_watt.django.serializers import NestedModelSerializer
 
 
 class ParentKeepChildrenSerializer(NestedModelSerializer):
@@ -199,4 +198,3 @@ def test_nested_children_are_scoped_to_their_parent():
     child.refresh_from_db()
     assert child.parent_id == parent_b.pk
     assert child.name == "Child B"
-

@@ -87,4 +87,3 @@ export function useArticle(data: Partial<Article> = {}): Article {
         ...data,
     });
 }
-

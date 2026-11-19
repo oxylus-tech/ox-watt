@@ -25,6 +25,7 @@ __all__ = (
 
 class UUID(models.Model):
     """Provide uuid field."""
+
     uuid = models.UUIDField(_("UUID"), default=uuid4, db_index=True, editable=False, unique=True)
 
     class Meta:

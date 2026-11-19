@@ -101,4 +101,3 @@ ADM provides three editor composables:
   repository API client.
 
 See [Editors](./editors.md) for details and examples.
-

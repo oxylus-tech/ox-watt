@@ -1,8 +1,7 @@
 from pathlib import Path
-from uuid import UUID
 
 from django.conf import settings
-from .. import conf
+from ..django import conf
 
 
 __all__ = ("FileSettings", "files_settings", "resolve")
@@ -12,6 +11,7 @@ class FileSettings(conf.Settings):
     """
     Setting class used by the files module.
     """
+
     MEDIA_DIR: Path = settings.MEDIA_ROOT / "ox_files"
     """ MEDIA directory """
     UPLOAD_DIR: str = "ox_files/uploads"
@@ -68,4 +68,3 @@ Settings used by file models by default, using key ``OX_FILES``.
 
 resolve = files_settings.resolve
 """ Shortcut to ``files_settings`` 's :py:meth:`Settings.resolve`. """
-

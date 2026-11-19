@@ -204,9 +204,7 @@ def test_nested_serializer_handles_missing_nested_data():
 
 
 def test_nested_serializer_handles_empty_nested_list():
-    serializer = ParentSerializer(
-        data={"name": "Parent", "children": []}
-    )
+    serializer = ParentSerializer(data={"name": "Parent", "children": []})
 
     assert serializer.is_valid(), serializer.errors
 

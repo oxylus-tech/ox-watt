@@ -35,4 +35,3 @@ export interface FieldSet {
  * Fields can be declared individually or grouped into fieldsets.
  */
 export type ModelFieldsLayout = Array<string | FieldConfig | FieldSet>;
-

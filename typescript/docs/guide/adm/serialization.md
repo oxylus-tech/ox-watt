@@ -81,4 +81,3 @@ Data received from an API is not automatically trusted.
 Deserialization and validation should be used to ensure that external data conforms to the expected model structure.
 
 See [API integration](./api).
-

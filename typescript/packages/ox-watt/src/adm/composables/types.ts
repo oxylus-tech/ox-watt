@@ -15,7 +15,7 @@ import type {
     RepositoryDefinitionsInput
 } from '../repository'
 
-import type { BaseUseApiResult, UseFetchOptions, UseApiResult} from './api' 
+import type { BaseUseApiResult, UseFetchOptions, UseApiResult} from './api'
 
 
 export interface ReactiveRepository<

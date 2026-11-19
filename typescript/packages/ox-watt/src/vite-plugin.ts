@@ -36,7 +36,7 @@ export interface OxWattPluginOptions {
      *
      * A string can be used to specify the SFC catalogue path,
      * relative to sourceDir.
-     * 
+     *
      * When true, it will look for `componentsDir/sfc.json`.
      *
      * @default false

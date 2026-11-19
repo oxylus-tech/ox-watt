@@ -1,5 +1,5 @@
 import pytest
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import ValidationError
 
 from tests.django_project.testapp.models import TreeNode
 
@@ -113,5 +113,3 @@ class TestTreeNode:
         assert list(root_node.get_descendants(True)) == [root_node, child, child_2, subchild]
         assert list(child.get_descendants()) == [subchild]
         assert list(child_2.get_descendants()) == []
-
-

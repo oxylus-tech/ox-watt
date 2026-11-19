@@ -133,7 +133,7 @@ export class Model extends Spec {
 
     /**
      * Return the key used in i18n.
-     * 
+     *
      * @param key: optional sub element key.
      */
     static i18nKey(key?: string): string {

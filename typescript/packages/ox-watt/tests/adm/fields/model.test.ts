@@ -191,4 +191,3 @@ describe("ModelField", () => {
         expect(field.serialize(null)).toBeNull();
     });
 });
-

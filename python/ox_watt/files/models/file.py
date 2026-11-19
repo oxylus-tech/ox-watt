@@ -2,19 +2,17 @@ from __future__ import annotations
 
 from functools import cached_property
 from pathlib import Path
-import os
-import shutil
 from typing import Type
 
 from django.db import models, transaction
 from django.conf import settings
-from django.core.exceptions import ValidationError, PermissionDenied, FieldDoesNotExist
+from django.core.exceptions import ValidationError, FieldDoesNotExist
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 
 from ox_watt.django.models import Described, Timestamped, UUID
 
-from ..conf import files_settings, FileSettings
+from ..conf import files_settings
 from .. import processors
 from .folder import BaseFolder, validate_name
 
@@ -184,7 +182,6 @@ class BaseFile(Described, Timestamped, UUID):
             if Folder.objects.filter(parent_id=self.folder_id, **kw):
                 raise ValidationError({"name": "A folder exists for this path."})
 
-
     def _get_validation_lookup(self):
         return {"name": self.name}
 
@@ -213,7 +210,7 @@ class BaseFile(Described, Timestamped, UUID):
             self.read_mime_type(save)
         return registry.get(self.mime_type)
 
-    def create_preview(self, force: bool = True) -> tuple[bool,Path]:
+    def create_preview(self, force: bool = True) -> tuple[bool, Path]:
         """
         Generate and assign a preview to this file instance.
 
@@ -226,6 +223,8 @@ class BaseFile(Described, Timestamped, UUID):
             self.preview.delete()
             self.preview = None
             self.save(update_fields=["preview"])
+
+        processor = self.get_processor()
 
         with transaction.atomic():
             size = self._settings.THUMBNAIL_SIZE
@@ -259,4 +258,3 @@ class BaseFile(Described, Timestamped, UUID):
             self.preview = None
             self.file = None
         return super().delete(*args, **kwargs)
-

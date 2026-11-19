@@ -159,4 +159,3 @@ describe("Database integration", () => {
         expect(reviewers.get(loadedArticles[1])).toHaveLength(1);
     });
 });
-

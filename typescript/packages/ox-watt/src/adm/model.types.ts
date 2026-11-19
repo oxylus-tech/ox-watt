@@ -106,7 +106,7 @@ export interface RelationSerializeOptions {
 
 // ---- Model
 /**
- * Definition of a relation on the model. 
+ * Definition of a relation on the model.
  */
 export interface RelationDefinition<TModel extends Model = Model> {
     /** Related model name. */
@@ -200,4 +200,3 @@ export type ModelResolver = (name: string) => ModelClass;
 export interface ModelConstructor<T extends object> {
     new (...args: any[]): T;
 }
-

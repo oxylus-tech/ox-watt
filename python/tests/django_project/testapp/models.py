@@ -8,7 +8,7 @@ from ox_watt.django.models.tree import TreeNode as _TreeNode
 from ox_watt.files.models import BaseFile, BaseFolder
 
 
-__all__ = ("Value", "TreeNode", "OwnedTreeNode", "File", "Folder", "SerializerTestModel", "Child", "Parent")
+__all__ = ("Value", "TreeNode", "File", "Folder", "SerializerTestModel", "Child", "Parent")
 
 
 class SharedStatus(models.TextChoices):
@@ -65,8 +65,4 @@ class Child(UUID):
     """Child model linked to Parent."""
 
     name = models.CharField(_("Name"), max_length=100)
-    parent = models.ForeignKey(
-        Parent, models.CASCADE,
-        related_name="children",
-        verbose_name=_("Parent")
-    )
+    parent = models.ForeignKey(Parent, models.CASCADE, related_name="children", verbose_name=_("Parent"))

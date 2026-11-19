@@ -56,7 +56,7 @@ export abstract class Field<TConfig extends BaseFieldConfig = BaseFieldConfig>
     private static _resolvedRules?: ValidationRule[];
 
     protected readonly config: TConfig;
-        
+
     /**
      * Creates a field with its configuration.
      * @param config The options controlling the field behavior.
@@ -91,7 +91,7 @@ export abstract class Field<TConfig extends BaseFieldConfig = BaseFieldConfig>
     get defaultValue(): unknown {
         return this.config.default;
     }
-    
+
     /**
      * Returns the widget configured for this field.
      *
@@ -237,4 +237,3 @@ export abstract class Field<TConfig extends BaseFieldConfig = BaseFieldConfig>
         return value;
     }
 }
-

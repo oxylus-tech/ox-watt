@@ -161,4 +161,3 @@ A custom field should define:
 - Its serialization behavior, when it differs from the default.
 
 See the API reference for the field extension points.
-

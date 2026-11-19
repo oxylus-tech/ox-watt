@@ -82,7 +82,7 @@ export class I18nManager {
     /**
      * Loaded locale resources.
      */
-    private localeLoads = new Map<string, Promise<void>>(); 
+    private localeLoads = new Map<string, Promise<void>>();
 
     /**
      * Tracks locale resources that are currently loading or have been loaded.

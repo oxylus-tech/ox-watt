@@ -1,4 +1,3 @@
-
 import inspect
 import json
 import logging
@@ -97,10 +96,7 @@ def is_model_enum(enum_class: type[Enum], model: type[models.Model]) -> bool:
     :param model: Django model class.
     :return: Whether the enum is nested inside the model.
     """
-    return (
-        enum_class.__module__ == model.__module__
-        and enum_class.__qualname__.startswith(model.__qualname__ + ".")
-    )
+    return enum_class.__module__ == model.__module__ and enum_class.__qualname__.startswith(model.__qualname__ + ".")
 
 
 def get_enum_name(
@@ -120,7 +116,7 @@ def get_enum_name(
     :return: Qualified enum name.
     """
     if model is not None and is_model_enum(enum_class, model):
-        return enum_class.__qualname__[len(model.__qualname__) + 1:]
+        return enum_class.__qualname__[len(model.__qualname__) + 1 :]
 
     return enum_class.__qualname__
 
@@ -196,20 +192,14 @@ class Command(BaseCommand):
         result = list(apps.get_app_configs())
 
         if app_labels:
-            result = [
-                app for app in result
-                if app.label in app_labels
-            ]
+            result = [app for app in result if app.label in app_labels]
 
         if roots:
             roots = [path.resolve() for path in roots]
             result = [
-                app for app in result
-                if any(
-                    path == Path(app.path).resolve()
-                    or path in Path(app.path).resolve().parents
-                    for path in roots
-                )
+                app
+                for app in result
+                if any(path == Path(app.path).resolve() or path in Path(app.path).resolve().parents for path in roots)
             ]
 
         return result
@@ -255,9 +245,7 @@ class Command(BaseCommand):
         :param output: Translation dictionary to populate.
         """
         if app_config.verbose_name:
-            output[f"apps.{app_config.label}"] = escape(
-                str(app_config.verbose_name).replace("_", " ")
-            )
+            output[f"apps.{app_config.label}"] = escape(str(app_config.verbose_name).replace("_", " "))
 
         # Collect all loaded enums belonging to this application.
         app_enums = {
@@ -268,10 +256,7 @@ class Command(BaseCommand):
 
         # Global enums use the application namespace.
         for enum_class in app_enums:
-            if any(
-                is_model_enum(enum_class, model)
-                for model in app_config.get_models()
-            ):
+            if any(is_model_enum(enum_class, model) for model in app_config.get_models()):
                 continue
 
             enum_name = get_enum_name(enum_class, app_config)
@@ -327,14 +312,10 @@ class Command(BaseCommand):
             if isinstance(field, models.ManyToOneRel):
                 continue
 
-            output[prefix + field.name] = escape(
-                str(field.verbose_name).capitalize()
-            )
+            output[prefix + field.name] = escape(str(field.verbose_name).capitalize())
 
             if field.help_text:
-                output[f"{prefix}{field.name}.help"] = escape(
-                    str(field.help_text).capitalize()
-                )
+                output[f"{prefix}{field.name}.help"] = escape(str(field.help_text).capitalize())
 
     def get_enum_labels(
         self,
@@ -363,4 +344,3 @@ class Command(BaseCommand):
             output[f"{name}._.{member.name}"] = label
             output[f"{name}.{member.value}"] = label
             output[f"{name}._.{member.value}"] = label
-

@@ -1,13 +1,9 @@
 import inspect
 from functools import cached_property
 from importlib import import_module
-from typing import Type
 
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-
-from rest_framework import serializers
 
 
 __all__ = ("ClassField", "ClassPath")
@@ -104,5 +100,3 @@ class ClassField(models.CharField):
         super().contribute_to_class(cls, name, private_only)
         descriptor = ClassPath(None)
         descriptor.contribute_to_class(cls, name)
-
-

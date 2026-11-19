@@ -16,4 +16,3 @@ Here is the TypeScript documentation of it.
 
 - [Guide](/guide/): concepts, architecture and usage instructions.
 - [API Reference](/api/): technical reference generated from the source code.
-

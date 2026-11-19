@@ -69,7 +69,7 @@ export function withNestedSetup<T>(
     const app = createApp(parent);
     if(appInit)
         appInit(app)
-    
+
     app.mount(document.createElement('div'));
     app.unmount();
 

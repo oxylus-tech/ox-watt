@@ -331,4 +331,3 @@ The two components address different levels of form composition:
 In both cases, the field definition remains the source of reusable validation and widget defaults.
 
 Use component properties and field configurations to adapt those defaults to the needs of a particular view, rather than duplicating field definitions.
-

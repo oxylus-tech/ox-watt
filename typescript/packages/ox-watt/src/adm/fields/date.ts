@@ -47,4 +47,3 @@ export class DateField extends Field<DateFieldConfig> {
         return value;
     }
 }
-

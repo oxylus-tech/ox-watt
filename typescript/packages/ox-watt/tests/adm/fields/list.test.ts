@@ -78,4 +78,3 @@ describe("ListField", () => {
         expect(field.deserialize(null)).toBeNull();
     });
 });
-

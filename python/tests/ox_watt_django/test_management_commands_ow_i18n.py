@@ -1,4 +1,3 @@
-
 """Tests for the Django translation generator."""
 
 import json
@@ -173,7 +172,6 @@ class TestGetLabels:
     """Test translation collection."""
 
     def test_generates_application_label(self, generated_translations):
-        from tests.django_project.testapp.apps import AppConfig
 
         assert "apps.testapp" in generated_translations
 
@@ -193,10 +191,7 @@ class TestGetLabels:
     def test_generates_field_help_texts(self, generated_translations):
         labels = generated_translations
 
-        assert (
-            labels["testapp.models.Value.fields.name.help"]
-            == "Name of the value."
-        )
+        assert labels["testapp.models.Value.fields.name.help"] == "Name of the value."
 
     def test_does_not_generate_empty_help_texts(self, generated_translations):
         labels = generated_translations
@@ -345,4 +340,3 @@ class TestCommand:
             labels = json.load(file)
 
         assert "testapp.models.Value" in labels
-

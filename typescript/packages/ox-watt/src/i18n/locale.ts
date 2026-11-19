@@ -34,4 +34,3 @@ export function detectLocale(options: I18nOptions): string {
 
     return options.fallbackLocale;
 }
-

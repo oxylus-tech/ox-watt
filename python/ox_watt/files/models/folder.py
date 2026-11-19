@@ -9,7 +9,6 @@ from django.utils.translation import gettext_lazy as _
 
 from ox_watt.django.models import Described, Timestamped
 from ox_watt.django.models.tree import TreeNode, TreeNodeQuerySet
-from ..conf import FileSettings, files_settings
 
 
 __all__ = (
@@ -54,7 +53,7 @@ class BaseFolder(Described, Timestamped, TreeNode):
 
     @classmethod
     def file_model(cls):
-        """ Return the file model related to this folder (assuming the reverse name is ``files``). """
+        """Return the file model related to this folder (assuming the reverse name is ``files``)."""
         return cls.get_field("files").related_model
 
     def abs_path(self) -> Path:
@@ -113,4 +112,3 @@ class BaseFolder(Described, Timestamped, TreeNode):
         if path.exists():
             path.rmdir()
         super().delete()
-

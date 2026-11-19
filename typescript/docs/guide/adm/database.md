@@ -81,4 +81,3 @@ Database configuration should describe database-level behavior.
 Repository and API configuration belong to the repositories themselves.
 
 This separation makes it possible to reuse repositories in different database compositions without mixing application-level registration and transport configuration.
-

@@ -113,4 +113,3 @@ This is intentional: a repository owns its model-specific configuration and API 
 The database is only responsible for organizing and exposing repository instances.
 
 See [Database](./database) and [API integration](./api).
-

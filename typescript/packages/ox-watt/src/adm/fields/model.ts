@@ -14,7 +14,7 @@ export interface ModelFieldConfig extends BaseFieldConfig {
 
 /**
  * Serializes and deserializes nested model objects.
- * 
+ *
  * Note: it does not link to the database: the model stores are not used here.
  */
 export class ModelField extends Field<ModelFieldConfig> {
@@ -99,4 +99,3 @@ export class ModelField extends Field<ModelFieldConfig> {
             : this.config.model;
     }
 }
-

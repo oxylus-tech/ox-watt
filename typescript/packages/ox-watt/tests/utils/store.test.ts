@@ -626,4 +626,3 @@ describe('ReactiveKeyedStore', () => {
             .toThrow('Item "42" not found in repository.');
     });
 });
-

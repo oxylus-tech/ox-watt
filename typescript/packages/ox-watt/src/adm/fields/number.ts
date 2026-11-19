@@ -106,4 +106,3 @@ export class IntegerField extends Field<IntegerFieldConfig> {
         return value;
     }
 }
-

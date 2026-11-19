@@ -6,7 +6,14 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 
-__all__ = ("RelatedField", "RelatedObjectField", "ModelSerializer", "NestedInfo", "NestedSerializer", "NestedModelSerializer")
+__all__ = (
+    "RelatedField",
+    "RelatedObjectField",
+    "ModelSerializer",
+    "NestedInfo",
+    "NestedSerializer",
+    "NestedModelSerializer",
+)
 
 
 class RelatedField(serializers.SlugRelatedField):
@@ -83,10 +90,7 @@ class NestedSerializerMetaclass(serializers.SerializerMetaclass):
 
         if meta := cls.__dict__.get("Meta"):
             if nested := getattr(meta, "nested", None):
-                meta.nested = {
-                    info.field: info
-                    for info in (mcls.get_nested_info(val) for val in nested)
-                }
+                meta.nested = {info.field: info for info in (mcls.get_nested_info(val) for val in nested)}
         return cls
 
     @classmethod
@@ -202,7 +206,7 @@ class NestedModelSerializer(ModelSerializer, metaclass=NestedSerializerMetaclass
             for data in values:
                 # pop id and replace it to nested's foreignkey value
                 # targeting obj.
-                id = data.pop("uuid", None) 
+                id = data.pop("uuid", None)
                 data[manager.field.name] = obj
 
                 # get serializer depending on update/create
@@ -215,9 +219,7 @@ class NestedModelSerializer(ModelSerializer, metaclass=NestedSerializerMetaclass
 
                 if id:
                     if instance is None:
-                        raise PermissionDenied(
-                            "The related object does not belong to this parent."
-                        )
+                        raise PermissionDenied("The related object does not belong to this parent.")
                     ser = ser_cls(instance, partial=True, **kw)
                 else:
                     ser = ser_cls(**kw)
@@ -230,4 +232,3 @@ class NestedModelSerializer(ModelSerializer, metaclass=NestedSerializerMetaclass
         to_delete = info.delete and [obj.pk for uid, obj in existing.items() if uid not in seen]
         if to_delete:
             model.objects.filter(id__in=to_delete).delete()
-

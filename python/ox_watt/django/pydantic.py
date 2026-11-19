@@ -20,7 +20,7 @@ class LazyTranslation:
         class MyModel(BaseModel):
             value: LazyTranslation|None = None
 
-        
+
         obj = MyModel(value=_("Translated string"))
 
     """
@@ -38,8 +38,5 @@ class LazyTranslation:
             return str(v)
 
         return core_schema.no_info_plain_validator_function(
-            validate, serialization=core_schema.plain_serializer_function_ser_schema(
-                serialize, when_used="json"
-            )
+            validate, serialization=core_schema.plain_serializer_function_ser_schema(serialize, when_used="json")
         )
-

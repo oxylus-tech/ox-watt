@@ -15,7 +15,7 @@ Those lies in ``ox_watt.django``:
 - ``conf``: define a Settings class that allows explicit and documented settings and using django settings. Support for dynaconf.
 - ``jwt``: JWT tokens encoder/decoder using pyjwt.
 - ``models``:
-    - Various common models providing common fields, as ``Named``, ``UUID``, ``Color``. 
+    - Various common models providing common fields, as ``Named``, ``UUID``, ``Color``.
     - SaveHook: hooks on save and batch save / delete / etc.
     - Owned: wraps over django-caps for parent-child object
     - TreeNode: improved tree models inspired by MPPT.

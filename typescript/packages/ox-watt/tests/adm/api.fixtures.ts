@@ -89,4 +89,3 @@ export const configs = {
     Article: { ...config, ...baseConfigs.Article },
     User: { ...config, ...baseConfigs.User },
 }
-

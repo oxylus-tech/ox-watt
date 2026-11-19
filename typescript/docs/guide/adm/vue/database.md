@@ -234,4 +234,3 @@ resolved relation structures.
 
 See [API requests](./api.md) for the composables dedicated to relation
 fetching and custom API operations.
-

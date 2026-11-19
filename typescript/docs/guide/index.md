@@ -20,4 +20,3 @@ application data.
 The i18n module provides translation management and locale loading utilities.
 
 [Read the i18n guide](/guide/i18n)
-

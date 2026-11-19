@@ -80,7 +80,7 @@ async function bootstrap() {
         i18n: {
             fallbackLocale: 'en',
         },
-        
+
         packages: [
             appPackage,
             contactsPackage,

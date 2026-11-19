@@ -292,4 +292,3 @@ describe("OWModelFields", () => {
         expect(wrapper.findAll("legend")).toHaveLength(0);
     });
 });
-

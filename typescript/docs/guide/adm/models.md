@@ -158,4 +158,3 @@ Same for relations with `Article.getRelations()` and `Article.getRelation()` rat
 - [Fields](./fields)
 - [Serialization](./serialization)
 - [Repositories](./repositories)
-

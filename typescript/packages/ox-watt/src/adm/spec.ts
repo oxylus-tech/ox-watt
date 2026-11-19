@@ -9,7 +9,7 @@ import { ValidationError} from "./model.types";
  */
 export interface SpecClass<TValidationOptions=SpecValidationOptions> {
     rules?: ValidationRule[];
-    
+
     validate(value: unknown, options?: TValidationOptions): ValidationIssue[]|null;
     getDefaults(): Record<string, unknown>;
     getFields(): Record<string, SerializerField>;
@@ -31,7 +31,7 @@ export interface SpecValidationOptions {
 
 /**
  * This is the base class used as specification.
- * 
+ *
  * A specification allows to:
  * - define and use fields
  * - validate input value as fields ones.
@@ -95,9 +95,9 @@ export class Spec
 
     /**
      * Return all rules declared by this model and its ancestors.
-     * 
+     *
      * Child declarations are appended to parent's ones.
-     * 
+     *
      * @returns The resolved validation rules.
      */
     static getRules(): ValidationRule[] {

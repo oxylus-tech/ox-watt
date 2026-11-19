@@ -163,5 +163,3 @@ The relation composables accept the following options as their last argument:
 | `deep` | `false` | Watch nested changes in the sources |
 
 Without `watch: true`, the operation is only executed when calling `execute()`.
-
-

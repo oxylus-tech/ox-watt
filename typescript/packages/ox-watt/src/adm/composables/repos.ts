@@ -16,7 +16,7 @@ import type {
     RepositoryModel
 } from '../repository';
 
-import type { BaseUseApiResult, UseFetchOptions, UseApiResult} from './api' 
+import type { BaseUseApiResult, UseFetchOptions, UseApiResult} from './api'
 import type {
     ReactiveRepository,
     ReactiveRepositories,
@@ -26,7 +26,7 @@ import type {
 } from './types';
 
 import { createRepos, createDb, type CreateReposOptions } from './create'
-import { useFetch, useApi } from './api' 
+import { useFetch, useApi } from './api'
 
 /**
  * Creates a reactive wrapper around an existing repository.

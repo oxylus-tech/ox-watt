@@ -139,4 +139,3 @@ function getInlineResourceId(
 
     return id;
 }
-

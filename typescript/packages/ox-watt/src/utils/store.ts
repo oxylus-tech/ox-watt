@@ -86,7 +86,7 @@ export class Store<
 
     /**
      * Override the existing item from the store.
-     * 
+     *
      * Default implementation just replace the stored item itself.
      */
     protected overrideStoredItem(key: TKey, storedItem: TStoredItem, item: TItem|TStoredItem): TStoredItem {

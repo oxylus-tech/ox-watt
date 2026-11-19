@@ -152,4 +152,3 @@ This allows ADM to work with different response formats without coupling models 
 Applications can customize API client behavior when needed, for example to integrate authentication, custom transport logic or additional request options.
 
 Such customization belongs to the repository/API layer, not to the model definition.
-

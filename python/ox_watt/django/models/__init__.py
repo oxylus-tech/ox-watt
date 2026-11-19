@@ -9,7 +9,18 @@ from django.apps.registry import Apps
 
 
 from .color import HexColorValidator, ColorField, Colored
-from .common import UUID, Named, LongNamed, OnlyDescribed, Described, Created, Updated, Timestamped, Versioned, PackageInfo
+from .common import (
+    UUID,
+    Named,
+    LongNamed,
+    OnlyDescribed,
+    Described,
+    Created,
+    Updated,
+    Timestamped,
+    Versioned,
+    PackageInfo,
+)
 from .cls import ClassField, ClassPath
 from .save_hook import SaveHook, SaveHookQuerySet
 from .tree import TreeNodeQuerySet, TreeNode

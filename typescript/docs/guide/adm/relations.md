@@ -91,4 +91,3 @@ Using identifiers instead of embedded objects has several advantages:
 A relation identifier does not guarantee that its target instance is currently available.
 
 Applications should account for unresolved relations, for example while data is loading or when the referenced object no longer exists.
-

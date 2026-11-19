@@ -377,4 +377,3 @@ describe('OWAutocomplete', () => {
         });
     });
 });
-

@@ -42,4 +42,3 @@ export class BooleanField extends Field<BooleanFieldConfig> {
         return value;
     }
 }
-

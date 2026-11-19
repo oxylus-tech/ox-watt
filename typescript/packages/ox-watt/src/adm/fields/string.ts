@@ -61,4 +61,3 @@ export class StringField extends Field<StringFieldConfig> {
         return issues;
     }
 }
-

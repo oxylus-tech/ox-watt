@@ -8,6 +8,7 @@ It assumes that you provide settings:
     - You install ox_watt with the ``jwt`` dependency group.
 
 """
+
 from datetime import datetime
 from typing import Any, Type
 
@@ -25,8 +26,9 @@ __all__ = ("JWToken", "JWTokenViewMixin", "encode", "decode")
 def get_jwt_key():
     try:
         return settings.JWT_KEY
-    except:
+    except AttributeError:
         raise RuntimeError("Missing `JWT_KEY` setting. Please add one in your django settings.")
+
 
 def get_jwt_fallbacks():
     return getattr(settings, "JWT_KEY_FALLBACKS", [])
