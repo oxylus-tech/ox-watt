@@ -30,6 +30,7 @@ interface Props {
 withDefaults(defineProps<Props>(), {
     help: undefined,
     description: undefined,
+    showTitle: false,
 });
 </script>
 

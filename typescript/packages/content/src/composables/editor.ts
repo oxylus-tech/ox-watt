@@ -1,4 +1,5 @@
-import { Editor, type AnyExtension, type EditorOptions, type JSONContent, } from "@tiptap/core";
+import { type AnyExtension, type EditorOptions, type JSONContent, } from "@tiptap/core";
+import { Editor } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 
 import { markRaw, onBeforeUnmount, onMounted, provide, inject, shallowReactive, shallowRef, watch } from "vue";
@@ -83,8 +84,10 @@ export function useRichTextEditor(
             editorOptions.content = content;
         }
 
+        const editorClass = options.editorClass ?? Editor
+
         editor.value = markRaw(
-            new Editor(editorOptions as EditorOptions),
+            new editorClass(editorOptions as EditorOptions),
         );
     }
 

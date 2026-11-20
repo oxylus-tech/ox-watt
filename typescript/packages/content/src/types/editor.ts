@@ -1,7 +1,16 @@
-import type { AnyExtension, Editor, EditorOptions, JSONContent } from "@tiptap/core";
+import type { AnyExtension, EditorOptions, JSONContent } from "@tiptap/core";
+import type { Editor } from "@tiptap/vue-3";
 import type { Ref, ShallowRef, } from "vue";
 
 import type { RichTextCommands, RichTextCommandDefinitions } from './commands.ts'
+
+
+/**
+ * Constructor type for a Vue-compatible TipTap editor.
+ */
+export type EditorConstructor<TEditor extends Editor = Editor> =
+    new (options?: Partial<EditorOptions>) => TEditor;
+
 
 /**
  * Shared configuration for rich text editors.
@@ -35,6 +44,13 @@ export interface RichTextEditorConfig {
      * @default false
      */
     watchToolsets?: boolean;
+
+    /**
+     * The editor's class to use for instanciation.
+     *
+     * It MUST subclass `@tiptap/vue-3`'s editor.
+     */
+    editorClass?: Editor;
 }
 
 /**
