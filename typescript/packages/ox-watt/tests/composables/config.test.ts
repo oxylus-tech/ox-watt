@@ -6,7 +6,7 @@ import { configKey, provideConfig, useConfig } from '@/composables';
 import type { Config } from '@/config';
 import { Repository, type Model } from '@/adm'
 
-import { withNestedSetup } from './fixtures';
+import { withNestedSetup } from '@/tests/vue';
 
 /**
  * Removes the DOM configuration fixture.

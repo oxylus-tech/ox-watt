@@ -4,10 +4,10 @@ import { createApp, defineComponent, h } from 'vue';
 
 import { configKey, provideConfig } from '@/composables';
 import { createRepo, createRepos } from '@/adm/composables';
+import { withSetup, withNestedSetup } from '@/tests/vue';
 
 import { User, Article, useDb } from '../fixtures';
 import { FakeApiClient } from '../api.fixtures';
-import { withSetup, withNestedSetup } from '../../composables/fixtures';
 
 import { Repository, Model } from '@/adm';
 import type { RepositoryClass } from '@/adm';

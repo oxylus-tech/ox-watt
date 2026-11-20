@@ -1,11 +1,12 @@
-
-import { computed, reactive } from "vue";
+import { createApp, computed, defineComponent, h, reactive } from "vue";
+import type { Component, ComputedRef } from "vue";
 import { describe, expect, it, vi } from "vitest";
 
-import { createActionsRegistry } from "../../../src/ui/actions";
-import { useActionRegistry } from "../../../src/ui/composables/actions";
+import { createActionsRegistry } from "@/ui/actions";
+import { useActionRegistry } from "@/ui/composables/actions";
+import type { ActionDefinition } from "@/ui/types/actions";
 
-import type { ActionDefinition } from "../../../src/ui/types/actions";
+import { mountComponent } from "../../composables/fixtures"
 
 interface TestContext {
     enabled: boolean;

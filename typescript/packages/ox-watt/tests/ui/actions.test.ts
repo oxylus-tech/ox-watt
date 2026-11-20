@@ -26,7 +26,6 @@ describe("createActionsRegistry", () => {
         const registry = createActionsRegistry<TestContext>();
 
         expect(registry.size).toBe(0);
-        expect(registry).toBeInstanceOf(Map === undefined ? Object : Object);
     });
 
     it("stores and retrieves action definitions", () => {

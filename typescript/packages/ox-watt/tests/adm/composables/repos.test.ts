@@ -9,6 +9,7 @@ import {
     useDbRepos,
     useDb as useReactiveDb
 } from '@/adm/composables/repos';
+import { withSetup } from '@/tests/fixtures';
 
 import {
     User,
@@ -20,7 +21,6 @@ import {
 } from '../fixtures';
 
 import { FakeApiClient, config as apiConfig } from '../api.fixtures';
-import { withSetup } from '../../composables/fixtures';
 
 
 describe('useRepo', () => {

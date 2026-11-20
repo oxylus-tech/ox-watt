@@ -1,5 +1,5 @@
-import { computed, provide, ref, unref } from "vue";
-import type { MaybeRef, InjectionKey } from "vue";
+import { computed, provide, inject, ref, unref } from "vue";
+import type { ComputedRef, MaybeRef, InjectionKey } from "vue";
 
 import type {
     ActionDefinition,
@@ -246,7 +246,7 @@ export function useAction<
 > {
     const registry = options.registry ?? inject(actionRegistryKey);
 
-    if (!registry) {
+    if (!registry && options.required) {
         throw new Error(
             "No action registry context has been provided.",
         );
