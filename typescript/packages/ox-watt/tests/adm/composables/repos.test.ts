@@ -9,7 +9,7 @@ import {
     useDbRepos,
     useDb as useReactiveDb
 } from '@/adm/composables/repos';
-import { withSetup } from '@/tests/fixtures';
+import { withSetup } from '@/tests/vue';
 
 import {
     User,
