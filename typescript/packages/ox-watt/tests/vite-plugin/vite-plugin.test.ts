@@ -157,7 +157,7 @@ describe('oxWatt Vite plugin', () => {
 
             expect(emittedFiles).toContainEqual(expect.objectContaining({
                 type: 'chunk',
-                id: '\0ox-watt:package',
+                id: 'ox-watt:package',
                 fileName: 'package.js',
             }));
 
@@ -235,7 +235,7 @@ describe('oxWatt Vite plugin', () => {
 
             expect(emittedFiles).toContainEqual(expect.objectContaining({
                 type: 'chunk',
-                id: '\0ox-watt:sfc',
+                id: 'ox-watt:sfc',
                 fileName: 'sfc.js',
             }));
 

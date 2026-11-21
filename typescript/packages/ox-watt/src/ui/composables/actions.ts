@@ -39,13 +39,26 @@ export interface UseActionRegistryOptions {
  */
 export interface UseActionOptions {
     /**
-     * Action registry used to resolve the action.
-     * When omitted, the nearest provided registry is used.
+     * Throws an error if the action is unavailable.
+     *
+     * @default false
+     */
+    required?: boolean;
+}
+
+
+/**
+ * Options for resolving a registered action.
+ */
+export interface UseNamedActionOptions {
+    /**
+     * Explicit action registry context.
+     * When omitted, the nearest provided context is used.
      */
     registry?: ActionRegistryContext<any>;
 
     /**
-     * Throws an error if the action is unavailable.
+     * Throws an error if the registry or action is unavailable.
      *
      * @default false
      */
@@ -66,12 +79,13 @@ export interface UseActionOptions {
  *
  * @returns A contextualized action instance.
  */
-function createActionInstance<TContext, TParams, TResult>(
+export function useAction<TContext, TParams = void, TResult = unknown>(
     definition: ActionDefinition<TContext, TParams, TResult>,
     context: MaybeRef<TContext>,
-    concurrent: boolean
+    options: UseActionOptions = {},
 ): ActionInstance<TContext, TParams, TResult> {
     const running = ref(false);
+    const {concurrent=false} = options
     let executionCount = 0;
 
     return {
@@ -156,22 +170,11 @@ export function useActionRegistry<TContext>(
         }
 
         const cached = instances.get(name);
-
-        if (cached?.definition === definition) {
+        if (cached?.definition === definition)
             return cached.instance;
-        }
 
-        const instance = createActionInstance(
-            definition,
-            context,
-            concurrent
-        );
-
-        instances.set(name, {
-            definition,
-            instance,
-        });
-
+        const instance = useAction(definition, context, {concurrent});
+        instances.set(name, { definition, instance });
         return instance;
     }
 
@@ -222,38 +225,34 @@ export function useActionRegistry<TContext>(
 
 
 /**
- * Retrieves a contextualized action instance.
+ * Retrieves a contextualized action instance from an action registry.
  *
- * Uses an explicitly provided registry when available, otherwise
- * resolves the nearest injected action registry.
+ * @template TContext - Action execution context.
+ * @template TParams - Parameters accepted by the action.
+ * @template TResult - Result returned by the action.
  *
- * @template TContext - Type of the action context.
- * @template TParams - Type of the action parameters.
- * @template TResult - Type of the action result.
  * @param name - Unique action identifier.
- * @param options - Action lookup options.
+ * @param options - Named action lookup options.
+ *
  * @returns A computed reference to the action instance.
  */
-export function useAction<
+export function useNamedAction<
     TContext = unknown,
     TParams = void,
     TResult = unknown,
 >(
     name: string,
-    options: UseActionOptions = {},
-): ComputedRef<
-    ActionInstance<TContext, TParams, TResult> | undefined
-> {
-    const registry = options.registry ?? inject(actionRegistryKey);
+    options: UseNamedActionOptions = {},
+): ComputedRef<ActionInstance<TContext, TParams, TResult> | undefined> {
+    const injectedRegistry = inject(actionRegistryKey, undefined);
+    const registry = options.registry ?? injectedRegistry;
 
     if (!registry && options.required) {
-        throw new Error(
-            "No action registry context has been provided.",
-        );
+        throw new Error("No action registry context has been provided.");
     }
 
     const action = computed(() =>
-        registry.get(name) as
+        registry?.get(name) as
             | ActionInstance<TContext, TParams, TResult>
             | undefined,
     );

@@ -9,16 +9,11 @@ import type { ActionInstance } from '../types/actions';
  */
 interface OwActionProps {
     /**
-     * Name of the action to resolve from the injected registry.
-     */
-    name?: string;
-
-    /**
      * Existing action instance.
      *
      * Takes precedence over the action resolved through the registry.
      */
-    action?: ActionInstance<any, any, any>;
+    action: ActionInstance<any, any, any>;
 
     /**
      * Overrides the action definition label.
@@ -29,32 +24,9 @@ interface OwActionProps {
      * Overrides the action definition help text.
      */
     help?: string;
-
-    /**
-     * HTML button type.
-     *
-     * @default "button"
-     */
-    type?: 'button' | 'submit' | 'reset';
 }
 
-const props = withDefaults(defineProps<OwActionProps>(), {
-    type: 'button',
-});
-
-/**
- * Resolve the action from the registry when no instance is provided.
- */
-const registeredAction = useAction(props.name ?? '', {
-    required: false,
-});
-
-/**
- * Resolved action instance.
- */
-const action = computed(() => {
-    return props.action ?? registeredAction.value;
-});
+const props = defineProps<OwActionProps>();
 
 /**
  * Button bindings derived from the resolved action.
@@ -62,26 +34,30 @@ const action = computed(() => {
  * This object is shared by the default button and the custom slot.
  */
 const bindings = computed(() => {
-    const currentAction = action.value;
+    const action = props.action;
 
-    if (!currentAction) {
+    if (!action) {
         return undefined;
     }
 
     return {
-        ...currentAction,
-        type: props.type,
-        disabled: !currentAction.enabled.value,
-        title: props.help ?? currentAction.definition.help ?? undefined,
-        label: props.label ?? currentAction.definition.label ?? '',
-        icon: currentAction.definition.icon,
+        ...action,
+        visible: action.visible.value,
+        enabled: action.enabled.value,
+        active: action.active.value,
+        running: action.running.value,
+        disabled: !action.enabled.value,
+        title: props.help ?? action.definition.help ?? undefined,
+        label: props.label ?? action.definition.label ?? '',
+        help: props.help ?? action.definition.help ?? undefined,
+        icon: action.definition.icon,
     };
 });
 
 /**
  * Expose the resolved action instance and button bindings.
  */
-defineExpose({ action, bindings, });
+defineExpose({ action: props.action, bindings, });
 </script>
 
 <template>
@@ -90,12 +66,12 @@ defineExpose({ action, bindings, });
         :action="action"
         v-bind="bindings"
     >
-        <button
+        <v-btn
             v-if="bindings.visible"
             v-bind="bindings"
             @click="bindings.run()"
         >
             {{ bindings.label }}
-        </button>
+        </v-btn>
     </slot>
 </template>

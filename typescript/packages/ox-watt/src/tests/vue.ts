@@ -1,5 +1,6 @@
 import { createApp, defineComponent, h } from 'vue';
 import type { App, Component } from 'vue';
+import { createVuetify } from 'vuetify';
 
 import type { Config } from '@/config';
 import { configKey, provideConfig } from '@/composables';
@@ -11,10 +12,12 @@ import { configKey, provideConfig } from '@/composables';
  * @param component - Component to mount.
  * @returns Function used to unmount the component.
  */
-function mountComponent(component: Component): () => void {
+export function mountComponent(component: Component, vuetify: boolean=false): () => void {
     const app = createApp(component);
     const container = document.createElement("div");
 
+
+    vuetify && app.use(createVuetify());
     document.body.appendChild(container);
     app.mount(container);
 
@@ -102,7 +105,7 @@ export function withNestedSetup<T>(
  *
  * @template T - Promise result type.
  */
-function createDeferred<T>() {
+export function createDeferred<T>() {
     let resolve!: (value: T) => void;
     let reject!: (reason?: unknown) => void;
 

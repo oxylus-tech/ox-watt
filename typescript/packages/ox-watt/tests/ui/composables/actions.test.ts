@@ -1,12 +1,16 @@
-import { createApp, computed, defineComponent, h, reactive } from "vue";
+import { createApp, computed, defineComponent, h, reactive, } from "vue";
 import type { Component, ComputedRef } from "vue";
 import { describe, expect, it, vi } from "vitest";
 
 import { createActionsRegistry } from "@/ui/actions";
-import { useActionRegistry } from "@/ui/composables/actions";
-import type { ActionDefinition } from "@/ui/types/actions";
+import {
+    useAction,
+    useActionRegistry,
+    useNamedAction,
+} from "@/ui/composables/actions";
+import type { ActionDefinition, ActionRegistry } from "@/ui/types/actions";
+import { mountComponent, createDeferred } from "@/tests/vue"
 
-import { mountComponent } from "../../composables/fixtures"
 
 interface TestContext {
     enabled: boolean;
@@ -14,33 +18,6 @@ interface TestContext {
     value: number;
 }
 
-/**
- * Creates a deferred promise for controlling asynchronous tests.
- *
- * @template T - Promise result type.
- */
-function createDeferred<T>() {
-    let resolve!: (value: T) => void;
-    let reject!: (reason?: unknown) => void;
-
-    const promise = new Promise<T>((res, rej) => {
-        resolve = res;
-        reject = rej;
-    });
-
-    return {
-        promise,
-        resolve,
-        reject,
-    };
-}
-
-/**
- * Creates an action definition with default test behavior.
- *
- * @param overrides - Properties overriding the default definition.
- * @returns An action definition.
- */
 function createAction(
     overrides: Partial<ActionDefinition<TestContext, void, void>> = {},
 ): ActionDefinition<TestContext, void, void> {
@@ -50,6 +27,41 @@ function createAction(
         ...overrides,
     };
 }
+
+function mountWithRegistry(
+    setup: () => void,
+    registry?: ActionRegistry
+): () => void {
+    if(!registry)
+        registry = createActionsRegistry<TestContext>();
+
+    const Child = defineComponent({
+        setup() {
+            setup();
+            return () => null;
+        },
+    });
+
+    const Root = defineComponent({
+        setup() {
+            useActionRegistry(
+                registry,
+                { value: 42 },
+                { provide: true },
+            );
+
+            return () => h(Child);
+        },
+    });
+
+    const app = createApp(Root);
+    const element = document.createElement("div");
+
+    app.mount(element);
+
+    return () => app.unmount();
+}
+
 
 describe("useActionRegistry", () => {
     it("returns undefined for an unknown action", () => {
@@ -494,5 +506,211 @@ describe("useActionRegistry", () => {
 
             expect(action?.running.value).toBe(false);
         });
+    });
+});
+
+
+
+describe("useAction", () => {
+    it("creates an action instance from a definition", () => {
+        const definition = createAction();
+        const context: TestContext = {
+            enabled: true,
+            active: false,
+            value: 0,
+        };
+
+        const action = useAction(definition, context);
+
+        expect(action.definition).toBe(definition);
+        expect(action.visible.value).toBe(true);
+        expect(action.enabled.value).toBe(true);
+        expect(action.active.value).toBe(false);
+        expect(action.running.value).toBe(false);
+    });
+
+    it("evaluates state callbacks against its context", () => {
+        const definition = createAction({
+            isVisible: context => context.value > 0,
+            isEnabled: context => context.enabled,
+            isActive: context => context.active,
+        });
+
+        const context: TestContext = {
+            enabled: false,
+            active: true,
+            value: 1,
+        };
+
+        const action = useAction(definition, context);
+
+        expect(action.visible.value).toBe(true);
+        expect(action.enabled.value).toBe(false);
+        expect(action.active.value).toBe(true);
+    });
+
+    it("reacts to changes in a reactive context", () => {
+        const context = reactive<TestContext>({
+            enabled: false,
+            active: false,
+            value: 0,
+        });
+
+        const action = useAction(
+            createAction({
+                isVisible: context => context.value > 0,
+                isEnabled: context => context.enabled,
+                isActive: context => context.active,
+            }),
+            context,
+        );
+
+        expect(action.visible.value).toBe(false);
+        expect(action.enabled.value).toBe(false);
+        expect(action.active.value).toBe(false);
+
+        context.value = 1;
+        context.enabled = true;
+        context.active = true;
+
+        expect(action.visible.value).toBe(true);
+        expect(action.enabled.value).toBe(true);
+        expect(action.active.value).toBe(true);
+    });
+
+    it("runs the action with its execution context", async () => {
+        const context: TestContext = {
+            enabled: true,
+            active: false,
+            value: 42,
+        };
+
+        const run = vi.fn().mockResolvedValue(undefined);
+        const action = useAction(createAction({ run }), context);
+
+        await action.run();
+
+        expect(run).toHaveBeenCalledOnce();
+        expect(run).toHaveBeenCalledWith(context, undefined);
+    });
+
+    it("prevents concurrent executions by default", async () => {
+        let resolve!: () => void;
+
+        const run = vi.fn(() => new Promise<void>(r => {
+            resolve = r;
+        }));
+
+        const action = useAction(
+            createAction({ run }),
+            { enabled: true, active: false, value: 0 },
+        );
+
+        const execution = action.run();
+
+        expect(action.running.value).toBe(true);
+        expect(action.enabled.value).toBe(false);
+
+        await expect(action.run()).rejects.toThrow(
+            'Action "test" is already running.',
+        );
+
+        resolve();
+        await execution;
+
+        expect(action.running.value).toBe(false);
+        expect(action.enabled.value).toBe(true);
+    });
+
+    it("allows concurrent executions when enabled", async () => {
+        const resolvers: Array<() => void> = [];
+
+        const run = vi.fn(() => new Promise<void>(resolve => {
+            resolvers.push(resolve);
+        }));
+
+        const action = useAction(
+            createAction({ run }),
+            { enabled: true, active: false, value: 0 },
+            { concurrent: true },
+        );
+
+        const first = action.run();
+        const second = action.run();
+
+        expect(run).toHaveBeenCalledTimes(2);
+        expect(action.running.value).toBe(true);
+
+        resolvers[0]();
+        await first;
+
+        expect(action.running.value).toBe(true);
+
+        resolvers[1]();
+        await second;
+
+        expect(action.running.value).toBe(false);
+    });
+
+    it("resets running after execution errors", async () => {
+        const error = new Error("Execution failed");
+
+        const action = useAction(
+            createAction({
+                run: vi.fn().mockRejectedValue(error),
+            }),
+            { enabled: true, active: false, value: 0 },
+        );
+
+        await expect(action.run()).rejects.toBe(error);
+        expect(action.running.value).toBe(false);
+    });
+});
+
+
+describe("useNamedAction", () => {
+    it("resolves an action from the provided registry", () => {
+        const definition = createAction();
+
+        const registry = createActionsRegistry<TestContext>();
+        registry.set(definition);
+
+        let action: ReturnType<typeof useNamedAction<TestContext>>;
+        const unmount = mountWithRegistry(() => {
+            action = useNamedAction("test");
+        }, registry);
+
+        // The action is resolved through the registry context.
+        expect(action!.value?.definition).toBeDefined();
+
+        unmount();
+    });
+
+    it("returns undefined for an unknown action", () => {
+        let action: ReturnType<typeof useNamedAction<TestContext>>;
+
+        const unmount = mountWithRegistry(() => {
+            action = useNamedAction("unknown");
+        });
+
+        expect(action!.value).toBeUndefined();
+
+        unmount();
+    });
+
+    it("throws when no registry is provided and required is true", () => {
+        const Child = defineComponent({
+            setup() {
+                useNamedAction("test", { required: true });
+                return () => null;
+            },
+        });
+
+        const app = createApp(Child);
+        const element = document.createElement("div");
+
+        expect(() => app.mount(element)).toThrow(
+            "No action registry context has been provided.",
+        );
     });
 });

@@ -1,11 +1,7 @@
 import { computed } from "vue";
 
-import type {
-    ActionInstance,
-    ActionRegistryContext,
-    ToolsetDefinition,
-    ToolsetInstance,
-} from "../types/toolsets";
+import type { ActionInstance, ActionRegistryContext, } from "../types/actions";
+import type { ToolsetDefinition, ToolsetInstance, } from "../types/toolsets";
 
 /**
  * Creates a contextualized toolset.
