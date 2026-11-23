@@ -1,14 +1,8 @@
 import type { ComputedRef, Ref } from "vue";
 import type { Registry, UseRegistry } from "@/composables/registry"
 
-/**
- * Defines an action independently of its execution context.
- *
- * @template TContext - Action execution context.
- * @template TParams - Parameters accepted by the action.
- * @template TResult - Result returned by the action.
- */
-export interface ActionDefinition<TContext, TParams = void, TResult = unknown> {
+
+export interface BaseActionDefinition<TContext> {
     /** Unique action name within its registry. */
     name: string;
 
@@ -21,6 +15,9 @@ export interface ActionDefinition<TContext, TParams = void, TResult = unknown> {
     /** Optional icon identifier. */
     icon?: string;
 
+    /** Optional action handler. */
+    handler?: string;
+
     /** Determines whether the action is visible. */
     isVisible?: (context: TContext) => boolean;
 
@@ -30,8 +27,58 @@ export interface ActionDefinition<TContext, TParams = void, TResult = unknown> {
     /** Determines whether the action is active. */
     isActive?: (context: TContext) => boolean;
 
+}
+
+/**
+ * Defines an action executing provided run function.
+ *
+ * @template TContext - Action execution context.
+ * @template TParams - Parameters accepted by the action.
+ * @template TResult - Result returned by the action.
+ */
+export interface CommandActionDefinition<TContext, TParams = void, TResult = unknown>
+    extends BaseActionDefinition<TContext>
+{
     /** Executes the action. */
     run: (context: TContext, params: TParams) => TResult | Promise<TResult>;
+    href?: never;
+}
+
+/**
+ * Define an action going to the provided link.
+ */
+export interface LinkActionDefinition<TContext>
+    extends BaseActionDefinition<TContext>
+{
+    /** Executes the action. */
+    href: string;
+    run?: never;
+}
+
+/**
+ * Define an action to execute.
+ *
+ * @template TContext - Action execution context.
+ * @template TParams - Parameters accepted by the action.
+ * @template TResult - Result returned by the action.
+ */
+export type ActionDefinition<TContext, TParams=void, TResult = unknown> =
+    | CommandActionDefinition<TContext, TParams, TResult>
+    | LinkActionDefinition<TContext>;
+
+
+/**
+ * An action handler allows to handle multiple actions with the same run function.
+ *
+ * It avoid repeated code.
+ */
+export interface ActionHandler<
+    TContext=any,
+    TParams=void,
+    TResult=unknown,
+    TDefinition extends ActionDefinition<TContext, TParams, TResult>=ActionDefinition<TContext, TParams, TResult>
+> {
+    run: (context: TContext, definition: TDefinition, params?: TParams) => Promise<TResult> | TResult;
 }
 
 /**
@@ -63,5 +110,8 @@ export interface ActionInstance<TContext, TParams = void, TResult = unknown> {
     running: Ref<boolean>;
 
     /** Runs the action. */
-    run: (params?: TParams) => Promise<TResult>;
+    run?: (params?: TParams) => Promise<TResult>;
+
+    /** Url to load **/
+    href?: string;
 }

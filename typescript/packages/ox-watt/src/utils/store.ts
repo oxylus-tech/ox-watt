@@ -331,7 +331,7 @@ export class ReactiveKeyedStore<
     TGetOptions extends StoreGetOptions = StoreGetOptions,
 > extends KeyedStore<TKey, TItem, TGetOptions, ShallowRef<TItem>> {
 
-    declare protected override readonly items: ShallowReactive<Map<TKey, ShallowRef<TItem>>>;
+    declare protected readonly items: ShallowReactive<Map<TKey, ShallowRef<TItem>>>;
 
     /**
      * Create a reactive keyed store.

@@ -1,10 +1,35 @@
 import { computed, provide, inject, ref, unref, toRef } from "vue";
 import type { ComputedRef, MaybeRef, Ref } from "vue";
 
-import type { ActionDefinition, ActionInstance } from "../types/actions";
+import type { ActionDefinition, ActionInstance, ActionHandler } from "../types/actions";
 import type { ToolsetInstance } from "../types/toolsets"
 
 import { useRegistry, type UseRegistryOptions } from "@/composables/registry"
+
+
+/**
+ * This own action handlers that can be used by actions instances.
+ *
+ * By default we provide:
+ *
+ * - `link`: used to change the page when a definition has a `href` attribute.
+ *   You can replace it whenever you want to change the behavior. However, it
+ *   won't be sure that the action will be executed: the component may implement
+ *   its own behaviors (as `v-btn.href` property).
+ *
+ */
+export const actionHandlers = new Map<string, ActionHandler<any,any,any>>([
+    [
+        "link",
+        {
+            run(context: any, definition: ActionDefinition<any,any,any>, params?: null) {
+                if(!definition.href)
+                    return
+                window.location.href = definition.href
+            }
+        }
+    ]
+])
 
 
 /**
@@ -89,7 +114,15 @@ export function useAction<TContext, TParams = void, TResult = unknown>(
             running.value = true;
 
             try {
-                return await definition.run(unref(context), params as TParams);
+                if(definition.run)
+                    return await definition.run(unref(context), params as TParams);
+
+                const handlerKey = definition.handler ?? (definition.href ? "link" : undefined)
+                if(!handlerKey)
+                    throw new Error(`No handler provided on action ${definition.name}.`)
+
+                const handler = actionHandlers.get(handlerKey)
+                return await handler.run(context, definition, params)
             } finally {
                 executionCount--;
                 running.value = executionCount > 0;

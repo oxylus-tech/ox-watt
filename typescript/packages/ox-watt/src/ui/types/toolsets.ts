@@ -70,15 +70,6 @@ export interface ToolsetInstance<TContext>
     /** Original toolset definition. */
     definition: ToolsetDefinition<TContext>;
 
-    /** Whether the toolset is visible. */
-    visible: ComputedRef<boolean>;
-
-    /** Whether the toolset is active. */
-    active: ComputedRef<boolean>;
-
-    /** Whether the toolset is currently running. */
-    running: ComputedRef<boolean>;
-
     /**
      * Reactive reference to the associated context.
      */
