@@ -2,10 +2,10 @@
 import { computed, useAttrs, useId, useSlots } from "vue";
 
 import type { Field } from "../fields/field";
-import type { ValidationIssue } from "../model.types";
+import type { ValidationIssue, ValidationRule } from "../model.types";
 import type { Widget } from "../fields/widget";
 
-import { getWidgetProps, resolveWidget } from "./widgets";
+import { resolveWidget } from "./widgets";
 
 defineOptions({
     inheritAttrs: false,
@@ -92,7 +92,7 @@ const widgetBindings = computed<Record<string, unknown>>(() => {
     ]
 
     const initialProps = {
-        ...(resolvedWidget?.props),
+        ...(resolvedWidget.value?.props),
         id: inputId.value,
         name: props.name,
         label: props.label,
@@ -113,7 +113,7 @@ const widgetBindings = computed<Record<string, unknown>>(() => {
 });
 
 /** Whether the field currently has validation errors. */
-const hasErrors = computed(() => widgetBindings.value.errors?.length);
+const hasErrors = computed(() => (widgetBindings.value.errors as string[])?.length);
 
 /**
  * Emits a new value received from the widget.

@@ -29,7 +29,6 @@
             "dom"
         ],
 
-        "baseUrl": "./",
         "paths": {
             "@": ["./packages/ox-watt/src/index.ts"],
             "@/*": ["./packages/ox-watt/src/*"],

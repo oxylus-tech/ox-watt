@@ -1,4 +1,6 @@
 export * from './adm'
 export * from './config'
 export * from './composables'
+export * from './components'
 export * from './i18n'
+export * from './ui'

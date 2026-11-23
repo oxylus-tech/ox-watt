@@ -46,7 +46,7 @@ const bindings = computed(() => {
     return {
         ...attrs,
         run: action.run,
-        href: action.href
+        href: action.href,
         visible: action.visible.value,
         enabled: action.enabled.value,
         active: action.active.value,

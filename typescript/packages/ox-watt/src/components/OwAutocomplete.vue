@@ -25,7 +25,7 @@ interface Props<TResult> {
     searchOnMount?: boolean;
 
     /** Current selected value, following the VAutocomplete API. */
-    modelValue?: unknown;
+    modelValue?: any;
 
     /** Current search text, following the VAutocomplete API. */
     search?: string | null;

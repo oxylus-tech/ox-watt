@@ -8,7 +8,7 @@ import type { ToolsetInstance } from "../types/toolsets"
 /**
  * Props accepted by OwNamedAction.
  */
-interface OwNamedActionProps<TContext> {
+interface OwNamedActionProps {
     /**
      * Name of the registered action.
      */
@@ -17,7 +17,7 @@ interface OwNamedActionProps<TContext> {
     /**
      * Toolset used to resolve the action.
      */
-    toolset: ToolsetInstance<TContext>
+    toolset: ToolsetInstance<any>
 }
 
 const attrs = useAttrs()
