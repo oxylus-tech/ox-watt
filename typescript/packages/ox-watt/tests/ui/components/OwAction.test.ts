@@ -2,11 +2,12 @@ import { defineComponent, h, nextTick } from "vue";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import OwAction from "@/ui/components/OwAction.vue";
-import { createActionsRegistry } from "@/ui/actions";
-import { useActionRegistry } from "@/ui/composables/actions";
-import type { ActionDefinition } from "@/ui/types/actions";
 import { createDeferred, mountComponent } from "@/tests/vue";
+
+import OwAction from "@/ui/components/OwAction.vue";
+import type { ActionDefinition } from "@/ui/types/actions";
+import { useToolset } from "@/ui/composables/toolsets";
+import type { ToolsetDefinition } from "@/ui/types/toolsets";
 
 interface TestContext {
     enabled: boolean;
@@ -56,6 +57,21 @@ function mount(component: Parameters<typeof mountComponent>[0]): void {
 }
 
 /**
+ * Creates a test toolset definition containing one action.
+ *
+ * @param definition - Action definition registered in the toolset.
+ * @returns A toolset definition.
+ */
+function createToolset(
+    definition: ActionDefinition<TestContext, void, void>,
+): ToolsetDefinition<TestContext> {
+    return {
+        name: "test",
+        items: [definition],
+    };
+}
+
+/**
  * Creates a component providing an action instance to OwAction.
  *
  * @param definition - Action definition used to create the instance.
@@ -66,13 +82,14 @@ function createActionHost(
 ) {
     return defineComponent({
         setup() {
-            const registry = createActionsRegistry<TestContext>();
-            registry.set(definition);
-
-            const actions = useActionRegistry(registry, context);
+            const toolset = useToolset(
+                createToolset(definition),
+                context,
+                {},
+            );
 
             return () => h(OwAction, {
-                action: actions.get(definition.name),
+                action: toolset.get("test"),
             });
         },
     });
@@ -109,15 +126,16 @@ describe("OwAction", () => {
 
         const host = defineComponent({
             setup() {
-                const registry = createActionsRegistry<TestContext>();
-                registry.set(createAction({
-                    isEnabled: (ctx) => ctx.enabled,
-                }));
-
-                const actions = useActionRegistry(registry, disabledContext);
+                const toolset = useToolset(
+                    createToolset(createAction({
+                        isEnabled: (ctx) => ctx.enabled
+                    })),
+                    disabledContext,
+                    {}
+                )
 
                 return () => h(OwAction, {
-                    action: actions.get("test"),
+                    action: toolset.get("test"),
                 });
             },
         });
@@ -148,13 +166,14 @@ describe("OwAction", () => {
     it("supports overriding the label and help text", async () => {
         const host = defineComponent({
             setup() {
-                const registry = createActionsRegistry<TestContext>();
-                registry.set(createAction());
-
-                const actions = useActionRegistry(registry, context);
+                const toolset = useToolset(
+                    createToolset(createAction()),
+                    context,
+                    {}
+                )
 
                 return () => h(OwAction, {
-                    action: actions.get("test"),
+                    action: toolset.get("test"),
                     label: "Save",
                     help: "Save changes",
                 });
@@ -176,13 +195,13 @@ describe("OwAction", () => {
 
         const host = defineComponent({
             setup() {
-                const registry = createActionsRegistry<TestContext>();
-                registry.set(createAction());
-
-                const actions = useActionRegistry(registry, context);
-
+                const toolset = useToolset(
+                    createToolset(createAction()),
+                    context,
+                    {}
+                )
                 return () => h(OwAction, {
-                    action: actions.get("test"),
+                    action: toolset.get("test"),
                 }, {
                     default: (props: Record<string, unknown>) => {
                         slotProps = props;
@@ -224,13 +243,13 @@ describe("OwAction", () => {
 
         const host = defineComponent({
             setup() {
-                const registry = createActionsRegistry<TestContext>();
-                registry.set(definition);
-
-                const actions = useActionRegistry(registry, context);
-
+                const toolset = useToolset(
+                    createToolset(createAction()),
+                    context,
+                    {}
+                )
                 return () => h(OwAction, {
-                    action: actions.get("test"),
+                    action: toolset.get("test"),
                 }, {
                     default: (props: Record<string, unknown>) => {
                         slotProps = props;

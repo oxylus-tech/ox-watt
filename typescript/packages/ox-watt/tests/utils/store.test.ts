@@ -491,7 +491,7 @@ describe('ReactiveKeyedStore', () => {
     it('wraps initial items in shallow refs', () => {
         const item: Item = { id: 1, name: 'First' };
         const store = new TestReactiveKeyedStore(new Map([[1, item]]));
-
+        console.log(store, store.items)
         const ref = store.get(1);
 
         expect(ref).toBeDefined();

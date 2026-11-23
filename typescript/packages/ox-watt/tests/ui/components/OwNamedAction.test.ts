@@ -1,12 +1,13 @@
+
 import { defineComponent, h, nextTick } from "vue";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import OwNamedAction from "@/ui/components/OwNamedAction.vue";
-import { createActionsRegistry } from "@/ui/actions";
-import { useActionRegistry } from "@/ui/composables/actions";
+import { useToolset } from "@/ui/composables/toolsets";
 import type { ActionDefinition } from "@/ui/types/actions";
-import { mountComponent } from "@/tests/vue";
+import type { ToolsetDefinition, ToolsetInstance } from "@/ui/types/toolsets";
+import { createDeferred, mountComponent } from "@/tests/vue";
 
 interface TestContext {
     enabled: boolean;
@@ -47,6 +48,21 @@ function createAction(
 }
 
 /**
+ * Creates a toolset definition containing the supplied actions.
+ *
+ * @param actions - Actions registered in the toolset.
+ * @returns A toolset definition.
+ */
+function createToolsetDefinition(
+    ...actions: ActionDefinition<TestContext, void, void>[]
+): ToolsetDefinition<TestContext> {
+    return {
+        name: "test",
+        items: actions,
+    };
+}
+
+/**
  * Mounts a component and registers its cleanup callback.
  *
  * @param component - Component to mount.
@@ -56,35 +72,49 @@ function mount(component: Parameters<typeof mountComponent>[0]): void {
 }
 
 /**
- * Creates a component providing an action registry to OwNamedAction.
+ * Creates a component providing a toolset to OwNamedAction.
  *
- * @param definition - Action definition to register.
- * @param actionName - Name of the action rendered by OwNamedAction.
+ * @param toolset - Toolset instance used to resolve the action.
+ * @param name - Name of the action to resolve.
  * @returns A Vue component.
  */
-function createRegistryHost(
-    definition: ActionDefinition<TestContext, void, void>,
-    actionName = definition.name,
+function createActionHost(
+    toolset: ToolsetInstance<TestContext>,
+    name = "test",
 ) {
     return defineComponent({
         setup() {
-            const registry = createActionsRegistry<TestContext>();
-            registry.set(definition);
-
-            useActionRegistry(registry, context, {
-                provide: true,
-            });
-
             return () => h(OwNamedAction, {
-                name: actionName,
+                toolset,
+                name,
             });
         },
     });
 }
 
+/**
+ * Creates a toolset instance for the supplied actions.
+ *
+ * @param actions - Actions registered in the toolset.
+ * @param testContext - Context used to create action instances.
+ * @returns A toolset instance.
+ */
+function createTestToolset(
+    actions: ActionDefinition<TestContext, void, void>[],
+    testContext: TestContext = context,
+): ToolsetInstance<TestContext> {
+    return useToolset(
+        createToolsetDefinition(...actions),
+        testContext,
+        {},
+    );
+}
+
 describe("OwNamedAction", () => {
     it("renders the button for a registered action", async () => {
-        mount(createRegistryHost(createAction()));
+        const toolset = createTestToolset([createAction()]);
+
+        mount(createActionHost(toolset));
 
         await nextTick();
 
@@ -95,22 +125,10 @@ describe("OwNamedAction", () => {
         expect(button?.getAttribute("title")).toBe("Run the test action");
     });
 
-    it("does not render the button when the action is not registered", async () => {
-        const host = defineComponent({
-            setup() {
-                const registry = createActionsRegistry<TestContext>();
+    it("does not render anything when the action is not registered", async () => {
+        const toolset = createTestToolset([]);
 
-                useActionRegistry(registry, context, {
-                    provide: true,
-                });
-
-                return () => h(OwNamedAction, {
-                    name: "missing",
-                });
-            },
-        });
-
-        mount(host);
+        mount(createActionHost(toolset, "missing"));
 
         await nextTick();
 
@@ -118,9 +136,13 @@ describe("OwNamedAction", () => {
     });
 
     it("does not render the button when the action is not visible", async () => {
-        mount(createRegistryHost(createAction({
-            isVisible: () => false,
-        })));
+        const toolset = createTestToolset([
+            createAction({
+                isVisible: () => false,
+            }),
+        ]);
+
+        mount(createActionHost(toolset));
 
         await nextTick();
 
@@ -133,24 +155,13 @@ describe("OwNamedAction", () => {
             enabled: false,
         };
 
-        const host = defineComponent({
-            setup() {
-                const registry = createActionsRegistry<TestContext>();
-                registry.set(createAction({
-                    isEnabled: (ctx) => ctx.enabled,
-                }));
+        const toolset = createTestToolset([
+            createAction({
+                isEnabled: (ctx) => ctx.enabled,
+            }),
+        ], disabledContext);
 
-                useActionRegistry(registry, disabledContext, {
-                    provide: true,
-                });
-
-                return () => h(OwNamedAction, {
-                    name: "test",
-                });
-            },
-        });
-
-        mount(host);
+        mount(createActionHost(toolset));
 
         await nextTick();
 
@@ -160,10 +171,11 @@ describe("OwNamedAction", () => {
         expect((button as HTMLButtonElement).disabled).toBe(true);
     });
 
-    it("runs the registered action when the button is clicked", async () => {
+    it("runs the resolved action when the button is clicked", async () => {
         const definition = createAction();
+        const toolset = createTestToolset([definition]);
 
-        mount(createRegistryHost(definition));
+        mount(createActionHost(toolset));
 
         await nextTick();
 
@@ -173,20 +185,17 @@ describe("OwNamedAction", () => {
         expect(definition.run).toHaveBeenCalledWith(context, undefined);
     });
 
-    it("supports overriding the label and help text", async () => {
+    it("forwards attributes to OwAction", async () => {
+        const toolset = createTestToolset([createAction()]);
+
         const host = defineComponent({
             setup() {
-                const registry = createActionsRegistry<TestContext>();
-                registry.set(createAction());
-
-                useActionRegistry(registry, context, {
-                    provide: true,
-                });
-
                 return () => h(OwNamedAction, {
+                    toolset,
                     name: "test",
-                    label: "Save",
-                    help: "Save changes",
+                    id: "save-action",
+                    class: "custom-action",
+                    "data-testid": "named-action",
                 });
             },
         });
@@ -197,23 +206,20 @@ describe("OwNamedAction", () => {
 
         const button = document.body.querySelector("button");
 
-        expect(button?.textContent).toContain("Save");
-        expect(button?.getAttribute("title")).toBe("Save changes");
+        expect(button?.id).toBe("save-action");
+        expect(button?.classList.contains("custom-action")).toBe(true);
+        expect(button?.getAttribute("data-testid")).toBe("named-action");
     });
 
-    it("provides action properties to the default slot", async () => {
+    it("forwards action properties to the default slot", async () => {
         let slotProps: Record<string, unknown> | undefined;
+
+        const toolset = createTestToolset([createAction()]);
 
         const host = defineComponent({
             setup() {
-                const registry = createActionsRegistry<TestContext>();
-                registry.set(createAction());
-
-                useActionRegistry(registry, context, {
-                    provide: true,
-                });
-
                 return () => h(OwNamedAction, {
+                    toolset,
                     name: "test",
                 }, {
                     default: (props: Record<string, unknown>) => {
@@ -243,5 +249,62 @@ describe("OwNamedAction", () => {
             active: false,
             running: false,
         });
+    });
+
+    it("updates the slot state while the action is running", async () => {
+        const deferred = createDeferred<void>();
+        let slotProps: Record<string, unknown> | undefined;
+        let runPromise: Promise<unknown> | undefined;
+
+        const definition = createAction({
+            run: () => deferred.promise,
+        });
+
+        const toolset = createTestToolset([definition]);
+
+        const host = defineComponent({
+            setup() {
+                return () => h(OwNamedAction, {
+                    toolset,
+                    name: "test",
+                }, {
+                    default: (props: Record<string, unknown>) => {
+                        slotProps = props;
+
+                        return h("button", {
+                            type: "button",
+                            disabled: !props.enabled,
+                            onClick: () => {
+                                runPromise = (props.run as () => Promise<unknown>)();
+                            },
+                        }, String(props.label));
+                    },
+                });
+            },
+        });
+
+        mount(host);
+
+        await nextTick();
+
+        try {
+            document.body.querySelector("button")?.click();
+
+            await nextTick();
+
+            expect(slotProps?.running).toBe(true);
+            expect(slotProps?.enabled).toBe(false);
+            expect(
+                (document.body.querySelector("button") as HTMLButtonElement).disabled,
+            ).toBe(true);
+        } finally {
+            deferred.resolve();
+
+            if (runPromise) {
+                await runPromise;
+            }
+
+            await nextTick();
+        }
     });
 });

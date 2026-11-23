@@ -96,7 +96,7 @@ export class Store<
     }
 
     /**
-     * Return the raw stored object.
+     * Return the stored object.
      */
     get(key: TKey, options?: TGetOptions): TStoredItem | undefined {
         let item = this.items.get(key);
@@ -117,7 +117,7 @@ export class Store<
     }
 
     /**
-     * Return the exposed object.
+     * Return the initial object.
      */
     getRaw(key: TKey, options?: TGetOptions): TItem | undefined {
         const item = this.get(key, options);
@@ -214,6 +214,9 @@ export class Store<
 }
 
 
+export type KeyedItems<TKey, TItem, TStored> = Iterable<TItem|TStored> | Map<TKey,TItem|TStored>;
+
+
 /**
  * A store referencing items by a key field.
  */
@@ -226,9 +229,15 @@ export class KeyedStore<
     protected static keyField?: string;
     keyField?: string;
 
-    constructor(items?: Map<TKey, TItem> | null, keyField?: string) {
-        super(items);
+    constructor(items?: KeyedItems<TKey, TItem, TStoredItem> | null, keyField?: string) {
+        super();
         this.keyField = keyField;
+
+        if(items) {
+            const normItems = (items instanceof Map) ? items.values() : items
+            for(const item of normItems)
+                this.items.set(this.getKey(item), this.toStoredItem(item))
+        }
     }
 
     set(value: TItem|TStoredItem): TStoredItem {
@@ -303,12 +312,11 @@ export class KeyedStore<
         return results;
     }
 
-    setMany(entries: Iterable<TItem|TStoredItem>): TStoredItem[] {
+    setMany(entries: KeyedItems<TKey, TItem, TStoredItem>): TStoredItem[] {
+        const normEntries = entries instanceof Map ? entries.values() : entries
         const items: TStoredItem[] = [];
-
-        for (const entry of entries)
+        for (const entry of normEntries)
             items.push(this.set(entry));
-
         return items;
     }
 }
@@ -323,16 +331,17 @@ export class ReactiveKeyedStore<
     TGetOptions extends StoreGetOptions = StoreGetOptions,
 > extends KeyedStore<TKey, TItem, TGetOptions, ShallowRef<TItem>> {
 
-    protected override readonly items: ShallowReactive<Map<TKey, ShallowRef<TItem>>> =
-        shallowReactive(new Map<TKey, ShallowRef<TItem>>());
+    declare protected override readonly items: ShallowReactive<Map<TKey, ShallowRef<TItem>>>;
 
-    constructor(items?: Map<TKey, TItem> | null, keyField?: string) {
-        super(null, keyField);
-
-        if (items) {
-            for (const [key, value] of items)
-                this.items.set(key, shallowRef(value));
-        }
+    /**
+     * Create a reactive keyed store.
+     *
+     * @param items Initial items to store.
+     * @param keyField Name of the property used to extract item keys.
+     */
+    constructor(items?: KeyedItems<TKey, TItem, ShallowRef<TItem>> | null, keyField?: string) {
+        super(items, keyField);
+        this.items = shallowReactive(this.items);
     }
 
     protected override toStoredItem(item: TItem): ShallowRef<TItem> {

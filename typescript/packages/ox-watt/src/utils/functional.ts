@@ -89,3 +89,20 @@ export function resolveStaticValues<T extends Record<string, unknown> | unknown[
 
     return target[cacheKey] as T;
 }
+
+
+/**
+ * Return the first item of a path.
+ *
+ * @param path: path to split.
+ * @param sep: stem separator.
+ */
+export function pathHead(path: string, sep: string = "."): [string,string|undefined] {
+    const sepIndex = path.indexOf(sep);
+    if(sepIndex == -1)
+        return [path, undefined]
+    return [
+        path.substring(0, sepIndex),
+        path.substring(sepIndex+1),
+    ]
+}

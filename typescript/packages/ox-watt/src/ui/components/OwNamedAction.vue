@@ -3,21 +3,26 @@ import { useAttrs } from 'vue';
 import OwAction from "./OwAction.vue";
 
 import { useNamedAction } from "../composables/actions";
+import type { ToolsetInstance } from "../types/toolsets"
 
 /**
  * Props accepted by OwNamedAction.
  */
-interface OwNamedActionProps {
+interface OwNamedActionProps<TContext> {
     /**
      * Name of the registered action.
      */
     name: string;
-}
 
+    /**
+     * Toolset used to resolve the action.
+     */
+    toolset: ToolsetInstance<TContext>
+}
 
 const attrs = useAttrs()
 const props = defineProps<OwNamedActionProps>()
-const action = useNamedAction(props.name);
+const action = useNamedAction(props.toolset, props.name);
 </script>
 
 <template>

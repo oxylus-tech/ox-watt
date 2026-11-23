@@ -308,7 +308,7 @@ export class ModelStore<
 
     constructor(
         readonly model: ModelClass<TModel>,
-        items?: Map<ModelId, TModel>|null,
+        items?: Map<ModelId, TModel>|Iterable<TModel>|null,
     ){
         super(items)
     }

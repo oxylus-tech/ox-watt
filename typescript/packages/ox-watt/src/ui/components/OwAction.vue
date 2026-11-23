@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, useAttrs } from 'vue';
 
 import { useAction } from '../composables/actions';
 import type { ActionInstance } from '../types/actions';
+
 
 /**
  * Props accepted by OwAction.
@@ -27,6 +28,8 @@ interface OwActionProps {
 }
 
 const props = defineProps<OwActionProps>();
+const attrs = useAttrs()
+
 
 /**
  * Button bindings derived from the resolved action.
@@ -41,7 +44,9 @@ const bindings = computed(() => {
     }
 
     return {
-        ...action,
+        ...attrs,
+        action,
+        run: action.run,
         visible: action.visible.value,
         enabled: action.enabled.value,
         active: action.active.value,
