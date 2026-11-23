@@ -23,8 +23,8 @@
     },
     "scripts": {
         "dev": "vite",
-        "build": "tsc --noEmit && vite build && tsc -p ./tsconfig.build.json",
-        "build-src": "vite build && tsc -p ./tsconfig.build.json",
+        "build": "vue-tsc --noEmit && vite build && vue-tsc -p ./tsconfig.build.json",
+        "build-src": "vite build && vue-tsc -p ./tsconfig.build.json",
         "test": "vitest run",
         "test:watch": "vitest"
     },

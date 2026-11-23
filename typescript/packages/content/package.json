@@ -21,8 +21,8 @@
     },
     "scripts": {
         "dev": "vite",
-        "build": "tsc --noEmit && tsc -p ../../tsconfig.build.json && vite build",
-        "build-src": "tsc -p ../../tsconfig.build.json && vite build",
+        "build": "vue-tsc --noEmit && vue-tsc -p ../../tsconfig.build.json && vite build",
+        "build-src": "vue-tsc -p ../../tsconfig.build.json && vite build",
         "test": "vitest run",
         "test:watch": "vitest"
     },
