@@ -55,6 +55,14 @@ export interface LinkActionDefinition<TContext>
     run?: never;
 }
 
+export interface HandledActionDefinition<TContext>
+    extends BaseActionDefinition<TContext>
+{
+    handler: string;
+    run?: never;
+    href?: never;
+}
+
 /**
  * Define an action to execute.
  *
@@ -64,7 +72,8 @@ export interface LinkActionDefinition<TContext>
  */
 export type ActionDefinition<TContext, TParams=void, TResult = unknown> =
     | CommandActionDefinition<TContext, TParams, TResult>
-    | LinkActionDefinition<TContext>;
+    | LinkActionDefinition<TContext>
+    | HandledActionDefinition<TContext>;
 
 
 /**

@@ -20,9 +20,9 @@ import { useRegistry, type UseRegistryOptions } from "@/composables/registry"
  */
 export const actionHandlers = new Map<string, ActionHandler<any,any,any>>([
     [
-        "link",
+        "href",
         {
-            run(context: any, definition: ActionDefinition<any,any,any>, params?: null) {
+            run(context: any, definition: ActionDefinition<any,any,any>) {
                 if(!definition.href)
                     return
                 window.location.href = definition.href
