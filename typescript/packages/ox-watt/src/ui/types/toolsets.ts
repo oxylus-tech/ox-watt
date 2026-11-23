@@ -103,7 +103,11 @@ export type ToolsetInstanceChild<TContext> =
 export function isActionDefinition<TContext>(
     value: ActionDefinition<TContext, any, any> | ToolsetDefinition<TContext>,
 ): value is ActionDefinition<TContext, any, any> {
-    return "run" in value && typeof value.run === "function";
+    return (
+        ("run" in value && typeof value.run === "function") ||
+        ("href" in value && typeof value.href === "string") ||
+        ("handler" in value && typeof value.handler === "string")
+    )
 }
 
 
