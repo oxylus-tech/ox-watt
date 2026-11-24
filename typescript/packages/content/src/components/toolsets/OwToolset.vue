@@ -1,71 +1,25 @@
 <script setup lang="ts">
-/**
- * Properties accepted by the OwToolset component.
- */
-interface Props {
-    /**
-     * Visible toolset title.
-     */
-    title?: string;
+import {useAttrs} from "vue";
+import { mapSlots } from "ox-watt/composables";
 
-    /**
-     * Additional help text displayed as a tooltip.
-     */
-    help?: string;
+const attrs = useAttrs();
+const Toolset = mapSlots(OwToolset, {
+    filter: (name) => !name.startsWith("action.")
+})
 
-    /**
-     * Accessible label for the toolset group.
-     */
-    ariaLabel: string;
-
-    /**
-     * Accessible description of the toolset.
-     */
-    description?: string;
-
-    /** Show title */
-    showTitle?: boolean;
-}
-
-withDefaults(defineProps<Props>(), {
-    help: undefined,
-    description: undefined,
-    showTitle: false,
-});
 </script>
-
 <template>
-    <div
-        class="ow-toolset"
-        role="group"
-        :aria-label="ariaLabel"
-        :aria-description="description"
-        :title="help"
+    <v-btn-group
+        v-if="context.editor"
+        density="compact"
+        variant="text"
     >
-        <div v-if="props.showTitle" class="ow-toolset__title">
-            {{ title }}
-        </div>
-
-        <div class="ow-toolset__content">
-            <slot />
-        </div>
-    </div>
+        <OwToolset v-bind="attrs">
+            <template v-for="slot of slots">
+                <template #[name]="slotProps">
+                    <slot :name="name" v-bind="props"/>
+                </template>
+            </template>
+        </OwToolset>
+    </v-btn-group>
 </template>
-
-<style scoped>
-.ow-toolset {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.ow-toolset__title {
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.ow-toolset__content {
-    display: flex;
-    align-items: center;
-}
-</style>
