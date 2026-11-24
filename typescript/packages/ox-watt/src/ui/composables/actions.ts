@@ -1,5 +1,5 @@
-import { computed, provide, inject, ref, unref, toRef } from "vue";
-import type { ComputedRef, MaybeRef, Ref } from "vue";
+import { computed, provide, inject, ref, toRef } from "vue";
+import type { ComputedRef, Ref } from "vue";
 
 import type { ActionDefinition, ActionInstance, ActionHandler } from "../types/actions";
 import type { ToolsetInstance } from "../types/toolsets"
@@ -80,7 +80,7 @@ export interface UseNamedActionOptions {
  */
 export function useAction<TContext, TParams = void, TResult = unknown>(
     definition: ActionDefinition<TContext, TParams, TResult>,
-    context: MaybeRef<TContext>,
+    context: TContext,
     options: UseActionOptions = {},
 ): ActionInstance<TContext, TParams, TResult> {
     const running = ref(false);
@@ -91,16 +91,16 @@ export function useAction<TContext, TParams = void, TResult = unknown>(
         definition,
 
         visible: computed(() =>
-            definition.isVisible?.(unref(context)) ?? true
+            definition.isVisible?.(context) ?? true
         ),
 
         enabled: computed(() =>
-            (definition.isEnabled?.(unref(context)) ?? true) &&
+            (definition.isEnabled?.(context) ?? true) &&
             (concurrent || !running.value)
         ),
 
         active: computed(() =>
-            definition.isActive?.(unref(context)) ?? false
+            definition.isActive?.(context) ?? false
         ),
 
         running,
@@ -115,7 +115,7 @@ export function useAction<TContext, TParams = void, TResult = unknown>(
 
             try {
                 if(definition.run)
-                    return await definition.run(unref(context), params as TParams);
+                    return await definition.run(context, params as TParams);
 
                 const handlerKey = definition.handler ?? (definition.href ? "link" : undefined)
                 if(!handlerKey)

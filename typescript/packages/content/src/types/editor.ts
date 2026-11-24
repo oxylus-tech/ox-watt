@@ -1,8 +1,8 @@
-import type { AnyExtension, EditorOptions, JSONContent } from "@tiptap/core";
+import type { AnyExtension, EditorOptions, JSONContent, ChainedCommands } from "@tiptap/core";
 import type { Editor } from "@tiptap/vue-3";
 import type { Ref, ShallowRef, } from "vue";
 
-import type { RichTextCommands, RichTextCommandDefinitions } from './commands.ts'
+import type { ToolsetDefinition, ToolsetInstance } from "ox-watt/ui"
 
 
 /**
@@ -29,9 +29,9 @@ export interface RichTextEditorConfig {
     extensions?: AnyExtension[];
 
     /**
-     * Toolsets registered when the editor is initialized.
+     * Root toolset definition.
      */
-    toolsets?: EditorToolset[];
+    toolset?: ToolsetDefinition<RichTextContext>;
 
     /**
      * Additional TipTap editor configuration.
@@ -50,7 +50,7 @@ export interface RichTextEditorConfig {
      *
      * It MUST subclass `@tiptap/vue-3`'s editor.
      */
-    editorClass?: Editor;
+    editorClass?: EditorConstructor;
 }
 
 /**
@@ -126,20 +126,7 @@ export interface RichTextContext {
     /**
      * Registered editor toolsets, indexed by their unique names.
      */
-    toolsets: Map<string, EditorToolset>;
-
-    /**
-     * Register a toolset in the editor context.
-     *
-     * @param toolset Toolset to register.
-     * @param unmount Automatically unregister the toolset when
-     * the current component is unmounted.
-     * @returns A function that unregisters the toolset.
-     */
-    register(
-        toolset: EditorToolset,
-        unmount?: boolean,
-    ): () => void;
+    toolset?: ToolsetInstance<RichTextContext>;
 
     /**
      * Rebuild the editor while preserving its current content.
@@ -149,27 +136,40 @@ export interface RichTextContext {
     reset(): void;
 
     /**
-     * Registered editor commands.
+     * Creates a focused TipTap command chain.
+     *
+     * @param context - Rich-text editor context.
+     * @param action - Name of the TipTap chain command.
+     * @param args - Arguments passed to the TipTap command.
+     * @returns The resulting command chain, or null if the editor is unavailable.
      */
-    commands: RichTextCommands;
+    chain(action: string, ...args: unknown[]): ChainedCommands | undefined;
+
+    /**
+     * Executes a focused TipTap command chain.
+     *
+     * @param context - Rich-text editor context.
+     * @param action - Name of the TipTap chain command.
+     * @param args - Arguments passed to the TipTap command.
+     * @returns Whether the command chain was successfully executed.
+     */
+    edit(action: string, ...args: unknown[]): boolean;
+
+    /**
+     * Run a command declared by nested toolsets.
+     *
+     * @param action - Path to a toolset's actions.
+     * @param params - Parameters to pass down to the action.
+     */
+    run(action: string, params?: unknown): unknown;
 }
 
 /**
  * Toolset registered in a rich text editor.
  */
-export interface EditorToolset {
-    /**
-     * Unique toolset identifier.
-     */
-    name: string;
-
+export interface EditorToolset extends ToolsetDefinition<RichTextContext> {
     /**
      * TipTap extensions required by this toolset.
      */
     extensions: AnyExtension[];
-
-    /**
-     * Commands contributed by this toolset.
-     */
-    commands?: RichTextCommandDefinitions;
 }

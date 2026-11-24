@@ -1,18 +1,18 @@
-import { type AnyExtension, type EditorOptions, type JSONContent, } from "@tiptap/core";
+import type { AnyExtension, EditorOptions, JSONContent, ChainedCommands } from "@tiptap/core";
 import { Editor } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 
 import { markRaw, onBeforeUnmount, onMounted, provide, inject, shallowReactive, shallowRef, watch } from "vue";
 import type { InjectionKey, ShallowRef } from "vue";
 
+import type { ToolsetInstance } from "ox-watt/ui";
 import type {
     EditorToolset,
     RichTextContext,
     RichTextEditorOptions,
     RichTextModelOptions,
 } from "../types/editor";
-import { useRegistration } from "ox-watt";
-import { useCommands } from "./commands";
+import { useRegistration, useRootToolset } from "ox-watt";
 
 
 /**
@@ -40,12 +40,6 @@ export function useRichTextEditor(
         : null;
 
     let context: RichTextContext;
-    const commandManager = useCommands(() => context);
-    const registrations = new Set<() => void>();
-
-    const toolsets = shallowReactive(
-        new Map<string, EditorToolset>(),
-    );
 
     /**
      * Collect all registered extensions.
@@ -60,7 +54,7 @@ export function useRichTextEditor(
             ...(options.extensions ?? [])
         ];
 
-        for (const toolset of toolsets.values())
+        for (const toolset of context.toolset.registry.values())
             extensions.push(...toolset.extensions);
         return extensions
     }
@@ -91,101 +85,68 @@ export function useRichTextEditor(
         );
     }
 
-    /**
-     * Rebuild the editor while preserving its current content.
-     *
-     * Does nothing if the editor has not yet been mounted.
-     */
-    function reset(): void {
-        if (!editor.value) {
-            return;
+
+    context = {
+        editor,
+
+        reset(): void {
+            if (!editor.value)
+                return;
+
+            const content = editor.value.getJSON();
+            editor.value.destroy();
+            editor.value = null;
+            createEditor(content);
+        },
+
+        chain(action: string, ...args: unknown[]): ChainedCommands | undefined {
+            const chain = context.editor.value?.chain().focus();
+
+            if (!chain)
+                return undefined;
+
+            const method = (chain as unknown as Record<string, unknown>)[action];
+            if (typeof method !== "function")
+                throw new Error(`Unknown TipTap chain command "${action}".`);
+
+            method.apply(chain, args);
+            return chain;
+        },
+
+        edit(action: string, ...args: unknown[]): boolean {
+            const chain = context.chain(action, ...args);
+            return chain?.run() ?? false;
+        },
+
+        run(action: string, params?: unknown): unknown {
+            return context.toolset!.run(action, params)
         }
-
-        const content = editor.value.getJSON();
-
-        editor.value.destroy();
-        editor.value = null;
-
-        createEditor(content);
     }
 
-    /**
-     * Registers an editor toolset.
-     *
-     * The toolset and its commands are automatically unregistered when the
-     * current Vue scope is disposed, unless explicitly disabled.
-     *
-     * @param toolset - Toolset to register.
-     * @param autoDispose - Whether to unregister the toolset when the current Vue scope is disposed.
-     * @returns A function that unregisters the toolset.
-     * @throws Error if a toolset with the same name is already registered.
-     */
-    function register(toolset: EditorToolset, autoDispose = true): () => void {
-        if (toolsets.has(toolset.name)) {
-            throw new Error(`A toolset named "${toolset.name}" is already registered.`);
-        }
-
-        let unregister!: () => void;
-
-        unregister = useRegistration(() => {
-            const unregisterCommands = toolset.commands
-                ? commandManager.register(toolset.commands, false)
-                : () => {};
-
-            toolsets.set(toolset.name, toolset);
-
-            return () => {
-                unregisterCommands();
-                toolsets.delete(toolset.name);
-                registrations.delete(unregister);
-            };
-        }, autoDispose);
-
-        registrations.add(unregister);
-
-        return unregister;
-    }
-
-    // Register initial toolsets.
-    for (const toolset of options.toolsets ?? []) {
-        if (toolsets.has(toolset.name))
-            throw new Error(
-                `Duplicate toolset name "${toolset.name}".`,
-            );
-
-        register(toolset, false)
-    }
+    context.toolset = useRootToolset(
+        {
+            ...(options.toolset ?? {}),
+            name: "editor"
+        },
+        context,
+    )
 
     // Create the editor only after the component has been mounted.
-    onMounted(() => {
-        createEditor();
-    });
+    onMounted(() => { createEditor(); });
 
     // Watch changes to the toolset collection.
     if (options.watchToolsets) {
         watch(
-            () => Array.from(toolsets.values()),
-            () => reset(),
+            () => Array.from(context.toolset.instances.values()),
+            () => context.reset(),
         );
     }
 
     // Destroy the editor when its owner is unmounted.
     onBeforeUnmount(() => {
-        for (const unregister of [...registrations])
-            unregister();
-
         editor.value?.destroy();
         editor.value = null;
-        toolsets.clear();
     });
-
-    context = {
-        editor,
-        toolsets,
-        register,
-        reset,
-        commands: commandManager.commands
-    };
 
     provide(richTextContextKey, context);
 

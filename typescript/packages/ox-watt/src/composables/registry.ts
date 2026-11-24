@@ -1,5 +1,6 @@
 import { provide, shallowReactive, type ShallowReactive } from "vue"
 import { KeyedStore, ReactiveKeyedStore } from "../utils/store"
+import { useRegistration } from "./useRegistration"
 
 
 /**
@@ -17,7 +18,7 @@ export interface CreateRegistryOptions<TItem, TReactive extends boolean=boolean>
     reactive?: TReactive,
     /** Items to use for initialization. */
     items?: Map<string, TItem> | Iterable<TItem>,
-    /** Override default keyField (name). **/
+    /** Override default keyField "name". **/
     keyField?: string,
 }
 
@@ -25,7 +26,12 @@ export interface CreateRegistryOptions<TItem, TReactive extends boolean=boolean>
  * Options to `useRegistry`.
  */
 export interface UseRegistryOptions {
-    provideKey?: string
+    /**
+     * Provide the registry using this key.
+     *
+     * It allows to inject it in children vue scopes.
+     */
+    provideKey?: string | unknown
 }
 
 
@@ -60,6 +66,24 @@ export interface UseRegistry<TItem, TInstance> {
      * @returns Whether the definition exists.
      */
     has(name: string): boolean;
+
+    /**
+     * Registers an instance in the registry.
+     *
+     * @param key - Unique instance identifier.
+     * @param instance - Instance to register.
+     * @param autoDispose - Whether to unregister when the current scope is disposed.
+     * @throws Error if an item with the same name is already registered.
+     * @returns The unregister callback.
+     */
+    register(key: string, instance: TInstance, autoDispose?: boolean): () => void;
+
+    /**
+     * Unregister an item and its instance.
+     *
+     * @param name - Name of the item to remove.
+     */
+    unregister(name: string): void;
 }
 
 /**
@@ -123,6 +147,23 @@ export function useRegistry<TItem, TInstance>(
 
         has(name: string): boolean {
             return registry.has(name);
+        },
+
+        register(name: string, item: TInstance, autoDispose = true): () => void {
+            return useRegistration(() => {
+                if (instances.has(name)) {
+                    throw new Error(`An item named "${name}" is already registered.`);
+                }
+
+                instances.set(name, item);
+
+                return () => registryContext.unregister(name);
+            }, autoDispose);
+        },
+
+        unregister(name: string): void {
+            registry.delete(name);
+            instances.delete(name);
         }
     }
 

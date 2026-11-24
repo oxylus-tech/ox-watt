@@ -29,7 +29,7 @@ export interface ToolsetDefinition<TContext> {
      *
      * Note: the name of toolset and actions MUST be unique.
      */
-    items: ToolsetDefinitionChild<TContext>[];
+    items?: ToolsetDefinitionChild<TContext, this>[];
 }
 
 /**
@@ -37,14 +37,14 @@ export interface ToolsetDefinition<TContext> {
  *
  * @template TContext - Context shared by the registered toolsets.
  */
-export type ToolsetRegistry<TContext> = Registry<ToolsetDefinitionChild<TContext>>;
+export type ToolsetRegistry<TContext, TToolset extends ToolsetDefinition<TContext> = ToolsetDefinition<TContext>> = Registry<ToolsetDefinitionChild<TContext, TToolset>>;
 
 /**
  * A child of a toolset definition.
  */
-export type ToolsetDefinitionChild<TContext> =
+export type ToolsetDefinitionChild<TContext, TToolset extends ToolsetDefinition<TContext> = ToolsetDefinition<TContext>> =
     | ActionDefinition<TContext, any, any>
-    | ToolsetDefinition<TContext>;
+    | TToolset;
 
 /**
  * Options used to create an toolset registry.
@@ -61,19 +61,19 @@ export interface CreateToolsetsRegistryOptions {
  * @template TParams - Parameters accepted by the toolset.
  * @template TResult - Result returned by the toolset.
  */
-export interface ToolsetInstance<TContext>
+export interface ToolsetInstance<TContext, TToolset extends ToolsetDefinition<TContext>=ToolsetDefinition<TContext>>
     extends UseRegistry<
         ToolsetDefinitionChild<TContext>,
         ToolsetInstanceChild<TContext>
     >
 {
     /** Original toolset definition. */
-    definition: ToolsetDefinition<TContext>;
+    definition: TToolset<TContext>;
 
     /**
      * Reactive reference to the associated context.
      */
-    context: Ref<TContext>;
+    context: TContext;
 
     /**
      * Executes an action by its name.
@@ -89,9 +89,9 @@ export interface ToolsetInstance<TContext>
 /**
  * A child of a toolset definition.
  */
-export type ToolsetInstanceChild<TContext> =
+export type ToolsetInstanceChild<TContext, TToolset extends ToolsetDefinition<TContext>=ToolsetDefinition<TContext>> =
     | ActionInstance<TContext, any, any>
-    | ToolsetInstance<TContext>;
+    | ToolsetInstance<TContext, TToolset>;
 
 /**
  * Checks whether a value is an action definition.
