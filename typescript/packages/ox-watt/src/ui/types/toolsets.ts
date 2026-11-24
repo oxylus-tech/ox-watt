@@ -1,6 +1,7 @@
 import type { ComputedRef, Ref } from "vue";
+
 import type { Registry, UseRegistry } from "@/composables/registry"
-import type { ActionDefinition, ActionInstance } from "./actions"
+import type { AnyActionDefinition, ActionInstance } from "./actions"
 
 
 /**
@@ -8,7 +9,10 @@ import type { ActionDefinition, ActionInstance } from "./actions"
  *
  * @template TContext - Action execution context.
  */
-export interface ToolsetDefinition<TContext> {
+export interface ToolsetDefinition<
+    TContext,
+    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+> {
     /**
      * Unique toolset identifier.
      */
@@ -29,22 +33,41 @@ export interface ToolsetDefinition<TContext> {
      *
      * Note: the name of toolset and actions MUST be unique.
      */
-    items?: ToolsetDefinitionChild<TContext, this>[];
+    items?: ToolsetDefinitionChild<TContext, TAction, this>[];
 }
+
+
+
+/**
+ * Extracts the action definition type from a toolset definition.
+ *
+ * @template TToolset - Toolset definition type.
+ */
+export type ToolsetAction<
+    TToolset extends ToolsetDefinition<any, any>
+> = TToolset extends ToolsetDefinition<any, infer TAction>
+    ? TAction
+    : never;
 
 /**
  * Stores toolset definitions indexed by their names.
  *
  * @template TContext - Context shared by the registered toolsets.
  */
-export type ToolsetRegistry<TContext, TToolset extends ToolsetDefinition<TContext> = ToolsetDefinition<TContext>> = Registry<ToolsetDefinitionChild<TContext, TToolset>>;
+export type ToolsetRegistry<
+    TContext,
+    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>,
+    TToolset extends ToolsetDefinition<TContext, TAction> = ToolsetDefinition<TContext, TAction>
+> = Registry<ToolsetDefinitionChild<TContext, TAction, TToolset>>;
 
 /**
  * A child of a toolset definition.
  */
-export type ToolsetDefinitionChild<TContext, TToolset extends ToolsetDefinition<TContext> = ToolsetDefinition<TContext>> =
-    | ActionDefinition<TContext, any, any>
-    | TToolset;
+export type ToolsetDefinitionChild<
+    TContext,
+    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>,
+    TToolset extends ToolsetDefinition<TContext, TAction> = ToolsetDefinition<TContext, TAction>
+> = TAction | TToolset;
 
 /**
  * Options used to create an toolset registry.
@@ -61,14 +84,17 @@ export interface CreateToolsetsRegistryOptions {
  * @template TParams - Parameters accepted by the toolset.
  * @template TResult - Result returned by the toolset.
  */
-export interface ToolsetInstance<TContext, TToolset extends ToolsetDefinition<TContext>=ToolsetDefinition<TContext>>
+export interface ToolsetInstance<
+    TContext,
+    TToolset extends ToolsetDefinition<TContext, any>=ToolsetDefinition<TContext, any>
+>
     extends UseRegistry<
-        ToolsetDefinitionChild<TContext>,
-        ToolsetInstanceChild<TContext>
+        ToolsetDefinitionChild<TContext, ToolsetAction<TToolset>, TToolset>,
+        ToolsetInstanceChild<TContext, TToolset>
     >
 {
     /** Original toolset definition. */
-    definition: TToolset<TContext>;
+    definition: TToolset;
 
     /**
      * Reactive reference to the associated context.
@@ -89,8 +115,10 @@ export interface ToolsetInstance<TContext, TToolset extends ToolsetDefinition<TC
 /**
  * A child of a toolset definition.
  */
-export type ToolsetInstanceChild<TContext, TToolset extends ToolsetDefinition<TContext>=ToolsetDefinition<TContext>> =
-    | ActionInstance<TContext, any, any>
+export type ToolsetInstanceChild<
+    TContext,
+    TToolset extends ToolsetDefinition<TContext, any>=ToolsetDefinition<TContext, any>
+> = | ActionInstance<TContext, ToolsetAction<TToolset>>
     | ToolsetInstance<TContext, TToolset>;
 
 /**
@@ -100,27 +128,32 @@ export type ToolsetInstanceChild<TContext, TToolset extends ToolsetDefinition<TC
  * @param value Value to check.
  * @returns Whether the value is an action definition.
  */
-export function isActionDefinition<TContext>(
-    value: ActionDefinition<TContext, any, any> | ToolsetDefinition<TContext>,
-): value is ActionDefinition<TContext, any, any> {
+export function isActionDefinition<
+    TContext,
+    TAction extends AnyActionDefinition<TContext>,
+    TToolset extends ToolsetDefinition<TContext, TAction>
+>(
+    value: TAction | TToolset,
+): value is TAction {
     return (
         ("run" in value && typeof value.run === "function") ||
         ("href" in value && typeof value.href === "string") ||
         ("handler" in value && typeof value.handler === "string")
-    )
+    );
 }
 
-
-
 /**
- * Checks whether a value is an action definition.
+ * Checks whether a value is an action instance.
  *
  * @template TContext Type of the action execution context.
  * @param value Value to check.
- * @returns Whether the value is an action definition.
+ * @returns Whether the value is an action instance.
  */
-export function isActionInstance<TContext>(
-    value: ActionInstance<TContext, any, any> | ToolsetInstance<TContext>,
-): value is ActionInstance<TContext, any, any> {
-    return isActionDefinition(value.definition)
+export function isActionInstance<
+    TContext,
+    TToolset extends ToolsetDefinition<TContext, any> = ToolsetDefinition<TContext, any>
+>(
+    value: ActionInstance<TContext, ToolsetAction<TToolset>> | ToolsetInstance<TContext, TToolset>,
+): value is ActionInstance<TContext, ToolsetAction<TToolset>> {
+    return isActionDefinition<TContext, ToolsetAction<TToolset>, TToolset>(value.definition);
 }

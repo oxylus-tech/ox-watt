@@ -1,10 +1,17 @@
 import { computed, provide, inject, ref, toRef } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
-import type { ActionDefinition, ActionInstance, ActionHandler } from "../types/actions";
-import type { ToolsetInstance } from "../types/toolsets"
-
+import { t } from "@/i18n"
 import { useRegistry, type UseRegistryOptions } from "@/composables/registry"
+
+import type {
+    ActionDefinition,
+    AnyActionDefinition,
+    ActionInstance,
+    ActionHandler,
+    ActionParam, ActionResult
+} from "../types/actions";
+import type { ToolsetInstance } from "../types/toolsets"
 
 
 /**
@@ -48,6 +55,14 @@ export interface UseActionOptions {
      * @default false
      */
     concurrent?: boolean;
+
+    /**
+     * Translation namespace used to get the values for each missing
+     * human displayed text.
+     *
+     * Note that this will update the provided definition in-place.
+     */
+    namespace?: string;
 }
 
 
@@ -78,14 +93,23 @@ export interface UseNamedActionOptions {
  *
  * @returns A contextualized action instance.
  */
-export function useAction<TContext, TParams = void, TResult = unknown>(
-    definition: ActionDefinition<TContext, TParams, TResult>,
+export function useAction<
+    TContext,
+    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+>(
+    definition: TAction,
     context: TContext,
     options: UseActionOptions = {},
-): ActionInstance<TContext, TParams, TResult> {
+): ActionInstance<TContext, TAction> {
     const running = ref(false);
     const {concurrent=false} = options
     let executionCount = 0;
+
+    if(options.namespace) {
+        const ns = `${options.namespace}.actions.${definition.name}`
+        definition.title ??= t(`${ns}.title`)
+        definition.help ??= t(`${ns}.help`)
+    }
 
     return {
         definition,
@@ -105,7 +129,7 @@ export function useAction<TContext, TParams = void, TResult = unknown>(
 
         running,
 
-        async run(params?: TParams): Promise<TResult> {
+        async run(params?: ActionParam<TAction>): Promise<ActionResult<TAction>> {
             if (!concurrent && running.value) {
                 throw new Error(`Action "${definition.name}" is already running.`);
             }
@@ -115,7 +139,7 @@ export function useAction<TContext, TParams = void, TResult = unknown>(
 
             try {
                 if(definition.run)
-                    return await definition.run(context, params as TParams);
+                    return await definition.run(context, params as ActionParam<TAction>);
 
                 const handlerKey = definition.handler ?? (definition.href ? "link" : undefined)
                 if(!handlerKey)
@@ -146,16 +170,15 @@ export function useAction<TContext, TParams = void, TResult = unknown>(
  */
 export function useNamedAction<
     TContext = unknown,
-    TParams = void,
-    TResult = unknown,
+    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
 >(
     registry: ToolsetInstance<TContext>,
     name: string,
     options: UseNamedActionOptions = {},
-): ComputedRef<ActionInstance<TContext, TParams, TResult> | undefined> {
+): ComputedRef<ActionInstance<TContext, TAction> | undefined> {
     const action = computed(() =>
         registry?.get(name) as
-            | ActionInstance<TContext, TParams, TResult>
+            | ActionInstance<TContext, TAction>
             | undefined,
     );
 

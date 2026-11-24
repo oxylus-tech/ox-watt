@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { markRaw, onBeforeUnmount, onMounted, provide, inject, shallowReactive, shallowRef, watch } from "vue";
 import type { InjectionKey, ShallowRef } from "vue";
 
-import type { ToolsetInstance } from "ox-watt/ui";
+import { type ToolsetInstance, isActionDefinition } from "ox-watt/ui";
 import type {
     EditorToolset,
     RichTextContext,
@@ -31,8 +31,11 @@ export const richTextContextKey: InjectionKey<RichTextContext> =
  * @param options Editor configuration.
  * @returns The editor context.
  */
-export function useRichTextEditor(
-    options: RichTextEditorOptions = {},
+export function useRichTextEditor<
+    TContext extends RichTextContext = RichTextContext,
+    TToolset extends EditorToolset<TContext> = EditorToolset<TContext>
+>(
+    options: RichTextEditorOptions<TContext, TToolset> = {},
 ): RichTextContext {
     const editor = shallowRef<Editor | null>(null);
     const model = options.model
@@ -54,8 +57,11 @@ export function useRichTextEditor(
             ...(options.extensions ?? [])
         ];
 
-        for (const toolset of context.toolset.registry.values())
-            extensions.push(...toolset.extensions);
+        for (const toolset of context.toolset.registry.values()) {
+            if(!isActionDefinition(toolset as TToolset))
+                extensions.push(...((toolset as TToolset).extensions ?? []));
+        }
+        // TODO: unique extensions
         return extensions
     }
 
@@ -69,7 +75,7 @@ export function useRichTextEditor(
             ...options.editorOptions,
             extensions: getExtensions(),
             onUpdate: (event) => {
-                model?.updateModel(event.editor),
+                model?.updateModel(event.editor as Editor),
                 options.editorOptions?.onUpdate?.(event)
             },
         };
@@ -113,7 +119,7 @@ export function useRichTextEditor(
             return chain;
         },
 
-        edit(action: string, ...args: unknown[]): boolean {
+        runChain(action: string, ...args: unknown[]): boolean {
             const chain = context.chain(action, ...args);
             return chain?.run() ?? false;
         },

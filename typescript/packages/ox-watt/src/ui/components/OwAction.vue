@@ -14,7 +14,7 @@ interface OwActionProps {
      *
      * Takes precedence over the action resolved through the registry.
      */
-    action: ActionInstance<any, any, any>;
+    action: ActionInstance<any, any>;
 
     /**
      * Overrides the action definition label.

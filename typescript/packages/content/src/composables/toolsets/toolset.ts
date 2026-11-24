@@ -1,126 +1,113 @@
+import { unref } from "vue";
 import type { Editor } from "@tiptap/core";
 
+import type { ActionDefinition, AnyActionDefinition } from "ox-watt/ui";
+import type { RichTextContext } from "../../types";
+
+
 /**
- * Definition of a toolbar action.
+ * Defines a TipTap command and its optional arguments.
  */
-export interface ToolsetAction {
-    /**
-     * Unique action identifier.
-     */
-    name: string;
-
-    /**
-     * Material Design Icon identifier.
-     */
-    icon: string;
-
-    /**
-     * Translation key for the action title.
-     */
-    titleKey: string;
-
-    /**
-     * Translation key for the action help text.
-     */
-    helpKey: string;
-
-    /**
-     * Translation key for the accessible label.
-     */
-    ariaLabelKey: string;
-
-    /**
-     * Translation key for the accessible description.
-     */
-    descriptionKey: string;
-
-    /**
-     * Check whether the action is currently active.
-     *
-     * @param editor TipTap editor instance.
-     * @returns Whether the action is active.
-     */
-    isActive(editor: Editor): boolean;
-
-    /**
-     * Check whether the action can currently be executed.
-     *
-     * @param editor TipTap editor instance.
-     * @returns Whether the action can be executed.
-     */
-    isEnabled(editor: Editor): boolean;
-
-    /**
-     * Execute the action.
-     *
-     * @param editor TipTap editor instance.
-     */
-    execute(editor: Editor): void;
-}
+export type EditorCommand =
+    | string
+    | [name: string, ...args: unknown[]];
 
 /**
- * Options used to create a toolbar action.
- */
-export interface CreateToolsetActionOptions {
-    /**
-     * Unique action identifier.
-     */
-    name: string;
-
-    /**
-     * Material Design Icon identifier.
-     */
-    icon: string;
-
-    /**
-     * Translation namespace.
-     */
-    namespace: string;
-
-    /**
-     * Check whether the action is currently active.
-     *
-     * @param editor TipTap editor instance.
-     * @returns Whether the action is active.
-     */
-    isActive?: (editor: Editor) => boolean;
-
-    /**
-     * Check whether the action can currently be executed.
-     *
-     * @param editor TipTap editor instance.
-     * @returns Whether the action can be executed.
-     */
-    canExecute: (editor: Editor) => boolean;
-
-    /**
-     * Execute the action.
-     *
-     * @param editor TipTap editor instance.
-     */
-    execute: (editor: Editor) => void;
-}
-
-/**
- * Create a toolbar action with standardized translation keys.
+ * Defines a declarative editor action.
  *
- * @param options Action configuration.
- * @returns A reusable toolbar action definition.
+ * @template TContext - Action execution context.
  */
-export function createToolsetAction(
-    options: CreateToolsetActionOptions,
-): ToolsetAction {
-    const key = `${options.namespace}.${options.name}`;
+export interface EditorActionInput<TContext extends RichTextContext>
+{
+    /** TipTap command and its optional arguments. */
+    command: EditorCommand;
 
-    return {
-        name: options.name,
-        icon: options.icon,
-        titleKey: `${key}.title`,
-        helpKey: `${key}.help`,
-        ariaLabelKey: `${key}.ariaLabel`,
-        descriptionKey: `${key}.description`,
-        isActive: options.isActive ?? (() => false),
-        isEnabled: options.canExecute,
-        execute: options.execute,
-    };
+    /** Custom action implementation. */
+    run?: (context: TContext) => unknown;
+
+    /** Custom enabled-state implementation. */
+    isEnabled?: (context: TContext) => boolean;
+
+    /** Active-state configuration or custom implementation. */
+    isActive?:
+        | string
+        | Record<string, unknown>
+        | ((context: TContext) => boolean);
+}
+
+
+/**
+ * Executes a TipTap command through an editor chain.
+ *
+ * @param editor - TipTap editor instance.
+ * @param command - Command name and optional arguments.
+ * @param can - Whether to check command availability without executing it.
+ * @returns Whether the command was successful or available.
+ */
+function executeCommand(
+    editor: Editor,
+    command: EditorCommand,
+    can = false
+): boolean {
+    const [name, ...args] = typeof command === "string"
+        ? [command]
+        : command;
+
+    const chain = can
+        ? editor.can().chain()
+        : editor.chain().focus();
+
+    const execute = (chain as any)[name];
+
+    if (typeof execute !== "function")
+        throw new Error(`Unknown editor command "${name}".`);
+
+    return execute.apply(chain, args).run();
+}
+
+
+/**
+ * Normalizes declarative editor actions into toolset action definitions.
+ *
+ * @template TContext - Action execution context.
+ *
+ * @param inputs - Declarative action definitions.
+ * @returns Normalized action definitions is an object (by name)
+ */
+export function createActions<
+    TContext extends RichTextContext,
+    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+>(
+    inputs: (EditorActionInput<TContext> & Omit<TAction, "run" | "isActive" | "isEnabled">)[]
+): TAction[] {
+    return inputs.map((input) => {
+        const {
+            command,
+            run,
+            isActive,
+            isEnabled,
+            ...attrs
+        } = input;
+
+        return {
+            ...attrs,
+
+            run: run ?? ((context: TContext) => executeCommand(
+                unref(context.editor),
+                command
+            )),
+
+            isEnabled: isEnabled ?? ((context: TContext) => executeCommand(
+                unref(context.editor),
+                command,
+                true
+            )),
+
+            isActive: typeof isActive === "function"
+                ? isActive
+                : isActive !== undefined
+                    ? (context: TContext) => unref(context.editor).isActive(isActive)
+                    : (context: TContext) => unref(context.editor).isActive(input.name)
+        } as unknown as TAction;
+    });
 }

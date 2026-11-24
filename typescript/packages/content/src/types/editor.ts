@@ -2,7 +2,11 @@ import type { AnyExtension, EditorOptions, JSONContent, ChainedCommands } from "
 import type { Editor } from "@tiptap/vue-3";
 import type { Ref, ShallowRef, } from "vue";
 
-import type { ToolsetDefinition, ToolsetInstance } from "ox-watt/ui"
+import type {
+    AnyActionDefinition,
+    ToolsetDefinition,
+    ToolsetInstance
+} from "ox-watt/ui"
 
 
 /**
@@ -12,10 +16,26 @@ export type EditorConstructor<TEditor extends Editor = Editor> =
     new (options?: Partial<EditorOptions>) => TEditor;
 
 
+export interface EditorToolset<
+    TContext extends RichTextContext = RichTextContext,
+    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+> extends ToolsetDefinition<TContext, TAction>
+{
+    /**
+     * Extensions required to run the toolset.
+     */
+    extensions?: AnyExtension[];
+}
+
+
 /**
  * Shared configuration for rich text editors.
  */
-export interface RichTextEditorConfig {
+export interface RichTextEditorConfig<
+    TContext extends RichTextContext = RichTextContext,
+    TToolset extends EditorToolset<TContext> = EditorToolset<TContext>
+>
+{
     /**
      * Automatically include TipTap StarterKit.
      *
@@ -31,7 +51,7 @@ export interface RichTextEditorConfig {
     /**
      * Root toolset definition.
      */
-    toolset?: ToolsetDefinition<RichTextContext>;
+    toolset?: TToolset;
 
     /**
      * Additional TipTap editor configuration.
@@ -78,7 +98,10 @@ export interface RichTextModelOptions {
 /**
  * Options for creating and managing a rich text editor.
  */
-export interface RichTextEditorOptions extends RichTextEditorConfig {
+export interface RichTextEditorOptions<
+    TContext extends RichTextContext = RichTextContext,
+    TToolset extends EditorToolset<TContext> = EditorToolset<TContext>
+> extends RichTextEditorConfig<TContext, TToolset> {
     /**
      * Optional reactive model configuration.
      */
@@ -88,7 +111,10 @@ export interface RichTextEditorOptions extends RichTextEditorConfig {
 /**
  * Properties accepted by the OwRichTextEditor component.
  */
-export interface OwRichTextEditorProps extends RichTextEditorConfig {
+export interface OwRichTextEditorProps<
+    TContext extends RichTextContext = RichTextContext,
+    TToolset extends EditorToolset<TContext> = EditorToolset<TContext>
+> extends RichTextEditorConfig<TContext, TToolset> {
     /**
      * Content synchronized with the editor through v-model.
      *
@@ -111,8 +137,12 @@ export interface OwRichTextEditorProps extends RichTextEditorConfig {
     readonly?: boolean;
 }
 
+
+
 /**
  * Shared context for a rich text editor and its descendants.
+ *
+ * @see useRichTextEditor
  */
 export interface RichTextContext {
     /**
@@ -126,7 +156,10 @@ export interface RichTextContext {
     /**
      * Registered editor toolsets, indexed by their unique names.
      */
-    toolset?: ToolsetInstance<RichTextContext>;
+    toolset?: ToolsetInstance<
+        RichTextContext,
+        EditorToolset
+    >;
 
     /**
      * Rebuild the editor while preserving its current content.
@@ -153,7 +186,7 @@ export interface RichTextContext {
      * @param args - Arguments passed to the TipTap command.
      * @returns Whether the command chain was successfully executed.
      */
-    edit(action: string, ...args: unknown[]): boolean;
+    runChain(action: string, ...args: unknown[]): boolean;
 
     /**
      * Run a command declared by nested toolsets.
@@ -162,14 +195,4 @@ export interface RichTextContext {
      * @param params - Parameters to pass down to the action.
      */
     run(action: string, params?: unknown): unknown;
-}
-
-/**
- * Toolset registered in a rich text editor.
- */
-export interface EditorToolset extends ToolsetDefinition<RichTextContext> {
-    /**
-     * TipTap extensions required by this toolset.
-     */
-    extensions: AnyExtension[];
 }

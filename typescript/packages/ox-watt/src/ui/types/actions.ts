@@ -6,8 +6,8 @@ export interface BaseActionDefinition<TContext> {
     /** Unique action name within its registry. */
     name: string;
 
-    /** Optional display label. */
-    label?: string;
+    /** Optional display title of the action. */
+    title?: string;
 
     /** Optional help text. */
     help?: string;
@@ -76,6 +76,34 @@ export type ActionDefinition<TContext, TParams=void, TResult = unknown> =
     | HandledActionDefinition<TContext>;
 
 
+export type AnyActionDefinition<TContext> = ActionDefinition<TContext, any, any>;
+
+
+/**
+ * Extracts the parameters type from an action definition.
+ *
+ * @template TAction - Action definition type.
+ */
+export type ActionParam<TAction> =
+    TAction extends {
+        run: (context: any, params: infer TParams) => any;
+    }
+        ? TParams
+        : void;
+
+/**
+ * Extracts the resolved result type from an action definition.
+ *
+ * @template TAction - Action definition type.
+ */
+export type ActionResult<TAction> =
+    TAction extends {
+        run: (...args: any[]) => infer TResult;
+    }
+        ? Awaited<TResult>
+        : void;
+
+
 /**
  * An action handler allows to handle multiple actions with the same run function.
  *
@@ -97,9 +125,12 @@ export interface ActionHandler<
  * @template TParams - Parameters accepted by the action.
  * @template TResult - Result returned by the action.
  */
-export interface ActionInstance<TContext, TParams = void, TResult = unknown> {
+export interface ActionInstance<
+    TContext,
+    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+> {
     /** Original action definition. */
-    definition: ActionDefinition<TContext, TParams, TResult>;
+    definition: TAction;
 
     /** Whether the action is visible. */
     visible: ComputedRef<boolean>;
@@ -119,7 +150,7 @@ export interface ActionInstance<TContext, TParams = void, TResult = unknown> {
     running: Ref<boolean>;
 
     /** Runs the action. */
-    run?: (params?: TParams) => Promise<TResult>;
+    run?: (params?: ActionParam<TAction>) => Promise<ActionResult<TAction>>;
 
     /** Url to load **/
     href?: string;
