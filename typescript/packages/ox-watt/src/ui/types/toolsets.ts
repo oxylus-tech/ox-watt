@@ -1,4 +1,4 @@
-import type { ComputedRef, Ref } from "vue";
+import type { ComputedRef, Ref, Component } from "vue";
 
 import type { Registry, UseRegistry } from "@/composables/registry"
 import type { AnyActionDefinition, ActionInstance } from "./actions"
@@ -27,6 +27,11 @@ export interface ToolsetDefinition<
      * Additional information about the toolset.
      */
     help?: string;
+
+    /**
+     * Icon of the toolset.
+     */
+    icon?: string;
 
     /**
      * Children of the toolset (action and nested toolset).
@@ -156,4 +161,37 @@ export function isActionInstance<
     value: ActionInstance<TContext, ToolsetAction<TToolset>> | ToolsetInstance<TContext, TToolset>,
 ): value is ActionInstance<TContext, ToolsetAction<TToolset>> {
     return isActionDefinition<TContext, ToolsetAction<TToolset>, TToolset>(value.definition);
+}
+
+
+/**
+ * Properties of the {@link OwToolset} component.
+ */
+export interface OwToolsetProps {
+    /**
+     * Toolset to display
+     */
+    toolset: ToolsetInstance<any>;
+
+    /**
+     * Display toolset title.
+     *
+     * This is not a warranty that title will be displayed, rather a request
+     * by the user. Component may display or not the title regardless this
+     * property.
+     */
+    showTitle?: boolean;
+}
+
+/**
+ * Properties of the {@link OwToolsetList} component.
+ */
+export interface OwToolsetListProps extends OwToolsetProps {
+}
+
+export interface OwToolsetMenuProps extends OwToolsetProps {
+    /**
+     * Whether this toolset menu is nested under another one.
+     */
+    nested?: boolean
 }

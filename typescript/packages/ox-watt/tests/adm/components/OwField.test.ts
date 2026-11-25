@@ -148,7 +148,6 @@ describe("OwField", () => {
     it("forwards named slots to the widget", () => {
         const SlotWidget = defineComponent({
             setup(_, { slots }) {
-                console.log(slots)
                 return () => h("div", slots.item?.());
             },
         });

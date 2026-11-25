@@ -1,4 +1,5 @@
 export * from './api'
 export * from './browser'
+export * from './slots'
 export * from './store'
 export * from './functional'

@@ -155,3 +155,32 @@ export interface ActionInstance<
     /** Url to load **/
     href?: string;
 }
+
+
+
+/**
+ * Properties of the {@link OwAction} component.
+ */
+export interface OwActionProps {
+    /**
+     * Existing action instance.
+     *
+     * Takes precedence over the action resolved through the registry.
+     */
+    action: ActionInstance<any, any>;
+
+    /**
+     * Overrides the action definition label.
+     */
+    title?: string;
+
+    /**
+     * Overrides the action definition help text.
+     */
+    help?: string;
+
+    /**
+     * Hide help.
+     */
+    noHelp?: boolean;
+}
