@@ -6,3 +6,4 @@ export * from "./date";
 export * from "./json";
 export * from "./list";
 export * from "./model";
+export * from "./widget";

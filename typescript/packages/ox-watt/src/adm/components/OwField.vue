@@ -6,6 +6,7 @@ import type { ValidationIssue, ValidationRule } from "../model.types";
 import type { Widget } from "../fields/widget";
 
 import { resolveWidget } from "./widgets";
+import type { OwFieldProps } from "./types"
 
 defineOptions({
     inheritAttrs: false,
@@ -14,46 +15,7 @@ defineOptions({
 /**
  * Defines the component properties.
  */
-const props = defineProps<{
-    /** Field definition. */
-    field: Field;
-
-    /** Current field value. */
-    modelValue?: unknown;
-
-    /** Optional field name. */
-    name?: string;
-
-    /** Optional input identifier. */
-    id?: string;
-
-    /** Label displayed above the widget. */
-    label?: string;
-
-    /** Help text displayed below the widget. */
-    help?: string;
-
-    /** Validation issues associated with the field. */
-    errors?: (ValidationIssue|string)[];
-
-    /** Extra form field validation rules **/
-    rules?: ValidationRule[];
-
-    /** Items passed to selection widgets. */
-    items?: unknown[];
-
-    /** Widget overriding the field default. */
-    widget?: Widget;
-
-    /** Whether the field is required. */
-    required?: boolean;
-
-    /** Whether the field is disabled. */
-    disabled?: boolean;
-
-    /** Whether the field is read-only. */
-    readonly?: boolean;
-}>();
+const props = defineProps<OwFieldProps>();
 
 const emit = defineEmits<{
     /** Emitted when the widget value changes. */

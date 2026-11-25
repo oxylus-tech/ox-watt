@@ -39,7 +39,7 @@ export default defineConfig({
         lib: {
             entry: 'src/index.ts',
             formats: ['es'],
-            fileName: 'lib.js',
+            fileName: 'lib',
         },
 
         sourcemap: true,

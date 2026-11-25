@@ -9,7 +9,7 @@ export default mergeConfig(baseConfig, {
             },
             formats: ['es'],
             fileName: (_format, entryName) => {
-                return entryName === 'index' ? 'lib' : entryName;
+                return entryName === 'index' ? 'lib.js' : entryName;
             },
         },
     },

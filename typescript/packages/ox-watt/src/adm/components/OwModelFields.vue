@@ -9,40 +9,12 @@ import OwField from "./OwField.vue";
 import type {
     FieldConfig,
     FieldSet,
-    ModelFieldsLayout
-} from "./OwModelFields.types";
+    OwFieldProps,
+    OwModelFieldProps,
+} from "./types";
 
-/**
- * Props accepted by OwModelFields.
- */
-interface Props {
-    /**
-     * Model instance whose fields are rendered.
-     */
-    model: Model;
 
-    /**
-     * Ordered layout describing the fields to render.
-     */
-    fields: ModelFieldsLayout;
-
-    /**
-     * Validation errors indexed by field name.
-     */
-    errors?: Record<string, string[]>;
-
-    /**
-     * Whether all fields are disabled by default.
-     */
-    disabled?: boolean;
-
-    /**
-     * Whether all fields are readonly by default.
-     */
-    readonly?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<OwModelFieldProps>(), {
     errors: () => ({}),
     disabled: false,
     readonly: false
@@ -97,7 +69,7 @@ function resolveField(config: string | FieldConfig): ResolvedField {
 
     return {
         name,
-        field,
+        field: field as Field,
         props: typeof config === "string" ? {} : (config.props ?? {})
     };
 }
@@ -132,7 +104,7 @@ const resolvedLayout = computed<ResolvedLayoutItem[]>(() => {
  *
  * @param resolved Resolved field configuration.
  */
-function getFieldBindings(resolved: ResolvedField): Record<string, unknown> {
+function getFieldBindings(resolved: ResolvedField): OwFieldProps {
     const modelClass = props.model.constructor as typeof Model;
 
     return {
@@ -174,6 +146,7 @@ function updateField(name: string, value: unknown): void {
                 <OwField
                     v-for="field in item.fieldset.fields"
                     :key="field.name"
+                    :field="field"
                     v-bind="getFieldBindings(field)"
                     @update:model-value="updateField(field.name, $event)"
                 />
@@ -182,6 +155,7 @@ function updateField(name: string, value: unknown): void {
             <OwField
                 v-else
                 :key="item.field.name"
+                :field="item.field"
                 v-bind="getFieldBindings(item.field)"
                 @update:model-value="updateField(item.field.name, $event)"
             />

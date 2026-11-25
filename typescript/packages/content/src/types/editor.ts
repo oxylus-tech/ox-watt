@@ -135,6 +135,13 @@ export interface OwRichTextEditorProps<
      * @default false
      */
     readonly?: boolean;
+
+    /**
+     * Hidden form input name.
+     *
+     * When provided, an input name is provided.
+     */
+    name: string;
 }
 
 

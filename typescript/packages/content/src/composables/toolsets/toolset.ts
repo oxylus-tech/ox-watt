@@ -1,8 +1,32 @@
 import { unref } from "vue";
 import type { Editor } from "@tiptap/core";
 
-import type { ActionDefinition, AnyActionDefinition } from "ox-watt/ui";
-import type { RichTextContext } from "../../types";
+import type {
+    ActionDefinition,
+    AnyActionDefinition,
+    ToolsetDefinition,
+    ToolsetAction,
+    ToolsetInstance,
+    UseToolsetOptions
+} from "ox-watt";
+import { useToolset } from "ox-watt";
+
+import type { RichTextContext, EditorToolset } from "../../types";
+
+
+export function useEditorToolset<
+    TContext extends RichTextContext,
+    TToolset extends EditorToolset<TContext, any>=EditorToolset<TContext, any>,
+    TAction extends ToolsetAction<TToolset> = ToolsetAction<TToolset>
+>(
+    definition: TToolset,
+    context: TContext,
+    options: Omit<UseToolsetOptions, "register"> = {},
+): ToolsetInstance<TContext, TToolset> {
+    return useToolset(definition, context, {
+        ...options, register: true
+    })
+}
 
 
 /**
@@ -73,6 +97,24 @@ function executeCommand(
  *
  * @param inputs - Declarative action definitions.
  * @returns Normalized action definitions is an object (by name)
+ *
+ * @example
+ *
+ * const toolset = {
+ *     name: "basic-toolset",
+ *     // It create ActionDefinition[] and infers `isEnabled` and `run`
+ *     items: createActions([
+ *         {
+ *             name: "bold"
+ *             command: "toggleBold"
+ *         },
+ *         {
+ *             name: "right"
+ *             command: ["textAlign", "right"],
+ *             isActive: {"text-align": "right"}
+ *         },
+ *     ])
+ * }
  */
 export function createActions<
     TContext extends RichTextContext,

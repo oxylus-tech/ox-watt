@@ -39,7 +39,6 @@ function isEditable(): boolean {
 const context = useRichTextEditor({
     starterKit: props.starterKit,
     extensions: props.extensions,
-    toolsets: props.toolsets,
     editorOptions: {
         ...props.editorOptions,
         editable: isEditable(),
@@ -66,8 +65,8 @@ watch(
 defineExpose({
     context,
     editor,
-    commands: context.commands,
-    register: context.register,
+    toolset: context.toolset,
+    run: context.run,
     reset: context.reset,
 });
 </script>
@@ -81,11 +80,11 @@ defineExpose({
         }"
         :aria-disabled="disabled || undefined"
     >
-        <slot
-            :editor="editor"
-            :commands="context.commands"
-        />
-
-        <EditorContent :editor="editor" />
+        <input v-if="props.name" :name="name" :value="model"/>
+        <slot name="prepend" :editor="editor" :context="context"/>
+        <slot :editor="editor" :context="context">
+            <EditorContent :editor="editor" />
+        </slot>
+        <slot name="append" :editor="editor" :context="context"/>
     </div>
 </template>

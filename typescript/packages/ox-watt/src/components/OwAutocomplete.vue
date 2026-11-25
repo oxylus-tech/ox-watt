@@ -3,38 +3,9 @@ import { onBeforeUnmount, onMounted, ref, shallowRef, useAttrs, useSlots, watch 
 import { VAutocomplete } from 'vuetify/components';
 import debounce from 'lodash-es/debounce';
 
-/**
- * Props specific to OWAutocomplete.
- *
- * @template TResult Type of the search result entries.
- */
-interface Props<TResult> {
-    /** Asynchronous function used to retrieve matching entries. */
-    searchItems: (query: string) => Promise<TResult[]>;
+import type { OwAutocompleteProps } from "./types";
 
-    /** Minimum number of characters required to start a search. */
-    minSearchLength?: number;
-
-    /** Delay before executing a search after the last input change, in milliseconds. */
-    debounce?: number;
-
-    /** Maximum delay before executing a search, in milliseconds. */
-    maxWait?: number;
-
-    /** Whether to search the initial search value when the component is mounted. */
-    searchOnMount?: boolean;
-
-    /** Current selected value, following the VAutocomplete API. */
-    modelValue?: any;
-
-    /** Current search text, following the VAutocomplete API. */
-    search?: string | null;
-
-    /** External loading state. */
-    loading?: boolean;
-}
-
-const props = withDefaults(defineProps<Props<TResult>>(), {
+const props = withDefaults(defineProps<OwAutocompleteProps<TResult>>(), {
     minSearchLength: 3,
     debounce: 300,
     maxWait: 1500,
