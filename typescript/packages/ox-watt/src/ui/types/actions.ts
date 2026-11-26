@@ -1,23 +1,11 @@
 import type { ComputedRef, Ref } from "vue";
-import type { Registry, UseRegistry } from "@/composables/registry"
+import type { Registry, UseRegistry } from "../../composables/registry"
+import type { NamedDefinitionBase } from "../../utils/types"
 
 
-export interface BaseActionDefinition<TContext> {
-    /** Unique action name within its registry. */
-    name: string;
-
-    /** Optional display title of the action. */
-    title?: string;
-
-    /** Optional help text. */
-    help?: string;
-
-    /** Optional icon identifier. */
-    icon?: string;
-
-    /** Optional action handler. */
-    handler?: string;
-
+export interface BaseAction<TContext>
+    extends NamedDefinitionBase
+{
     /** Determines whether the action is visible. */
     isVisible?: (context: TContext) => boolean;
 
@@ -26,7 +14,6 @@ export interface BaseActionDefinition<TContext> {
 
     /** Determines whether the action is active. */
     isActive?: (context: TContext) => boolean;
-
 }
 
 /**
@@ -36,8 +23,8 @@ export interface BaseActionDefinition<TContext> {
  * @template TParams - Parameters accepted by the action.
  * @template TResult - Result returned by the action.
  */
-export interface CommandActionDefinition<TContext, TParams = void, TResult = unknown>
-    extends BaseActionDefinition<TContext>
+export interface CommandAction<TContext, TParams = void, TResult = unknown>
+    extends BaseAction<TContext>
 {
     /** Executes the action. */
     run: (context: TContext, params: TParams) => TResult | Promise<TResult>;
@@ -47,17 +34,21 @@ export interface CommandActionDefinition<TContext, TParams = void, TResult = unk
 /**
  * Define an action going to the provided link.
  */
-export interface LinkActionDefinition<TContext>
-    extends BaseActionDefinition<TContext>
+export interface LinkAction<TContext>
+    extends BaseAction<TContext>
 {
-    /** Executes the action. */
+    /** Url to the next page. */
     href: string;
     run?: never;
 }
 
-export interface HandledActionDefinition<TContext>
-    extends BaseActionDefinition<TContext>
+/**
+ * Define an action running an {@link ActionHandler}.
+ */
+export interface HandledAction<TContext>
+    extends BaseAction<TContext>
 {
+    /** Action handler name. **/
     handler: string;
     run?: never;
     href?: never;
@@ -70,13 +61,13 @@ export interface HandledActionDefinition<TContext>
  * @template TParams - Parameters accepted by the action.
  * @template TResult - Result returned by the action.
  */
-export type ActionDefinition<TContext, TParams=void, TResult = unknown> =
-    | CommandActionDefinition<TContext, TParams, TResult>
-    | LinkActionDefinition<TContext>
-    | HandledActionDefinition<TContext>;
+export type Action<TContext, TParams=void, TResult = unknown> =
+    | CommandAction<TContext, TParams, TResult>
+    | LinkAction<TContext>
+    | HandledAction<TContext>;
 
 
-export type AnyActionDefinition<TContext> = ActionDefinition<TContext, any, any>;
+export type AnyAction<TContext> = Action<TContext, any, any>;
 
 
 /**
@@ -113,10 +104,15 @@ export interface ActionHandler<
     TContext=any,
     TParams=void,
     TResult=unknown,
-    TDefinition extends ActionDefinition<TContext, TParams, TResult>=ActionDefinition<TContext, TParams, TResult>
+    TDefinition extends Action<TContext, TParams, TResult>=Action<TContext, TParams, TResult>
 > {
     run: (context: TContext, definition: TDefinition, params?: TParams) => Promise<TResult> | TResult;
 }
+
+/**
+ * A map of action handlers.
+ */
+export type ActionHandlers<TContext> = Map<string, ActionHandler<any, any, any>>;
 
 /**
  * Represents an action definition bound to an execution context.
@@ -127,7 +123,7 @@ export interface ActionHandler<
  */
 export interface ActionInstance<
     TContext,
-    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+    TAction extends AnyAction<TContext> = AnyAction<TContext>
 > {
     /** Original action definition. */
     definition: TAction;
@@ -175,12 +171,12 @@ export interface OwActionProps {
     title?: string;
 
     /**
-     * Overrides the action definition help text.
+     * Overrides the action definition description text.
      */
-    help?: string;
+    description?: string;
 
     /**
-     * Hide help.
+     * Hide description.
      */
-    noHelp?: boolean;
+    noDescription?: boolean;
 }

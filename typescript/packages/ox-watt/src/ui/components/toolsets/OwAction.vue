@@ -7,7 +7,7 @@
  */
 import { computed, useAttrs, watchEffect } from "vue";
 
-import type { OwActionProps } from "@/ui/types/actions";
+import type { OwActionProps } from "../../types/actions";
 
 const props = defineProps<OwActionProps>();
 const attrs = useAttrs();
@@ -28,14 +28,14 @@ const bindings = computed(() => {
     return {
         disabled: Boolean(attrs.disabled) || !action.enabled.value,
         title: props.title ?? action.definition.title ?? "",
-        help: props.help ?? action.definition.help,
+        description: props.description ?? action.definition.description,
         icon: action.definition.icon,
     };
 });
 
 watchEffect(() => {
     console.log("OwAction title:", props.title);
-    console.log("OwAction help:", props.help);
+    console.log("OwAction description:", props.description);
 });
 
 /**
@@ -58,9 +58,9 @@ defineExpose({
             :href="props.action.href"
             :prepend-icon="bindings.title ? bindings.icon : ''"
             :icon="!bindings.title ? bindings.icon : ''"
-            :title="props.noHelp ? '' : bindings.help"
+            :title="props.noDescription ? '' : bindings.description"
             :aria-label="bindings.title || ''"
-            :aria-description="bindings.help"
+            :aria-description="bindings.description"
             :disabled="bindings.disabled"
             @click="props.action.run?.()"
         >

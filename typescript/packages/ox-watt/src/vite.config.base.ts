@@ -49,7 +49,6 @@ export default defineConfig({
             external: [
                 /^vue($|\/)/,
                 /^vuetify($|\/)/,
-                /^@tiptap\//,
                 'ox-watt',
             ],
         },

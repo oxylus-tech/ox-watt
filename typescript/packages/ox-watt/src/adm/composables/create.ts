@@ -1,5 +1,5 @@
-import { isIterable } from '@/utils'
-import { useConfig } from '@/composables/config'
+import { isIterable } from '../../utils'
+import { useConfig } from '../../composables/config'
 
 import type { ApiClientClass, ApiConfig } from '../api.types'
 import type { Model, ModelClass } from '../model'

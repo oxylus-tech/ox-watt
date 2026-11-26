@@ -1,4 +1,4 @@
-import { resolveStaticValues } from '@/utils/functional';
+import { resolveStaticValues } from '../../utils/functional';
 import type {
     SerializerField,
     ValidationIssue,

@@ -1,7 +1,7 @@
 import { computed, toValue } from 'vue';
 import type { MaybeRefOrGetter, ComputedRef } from 'vue';
 
-import { isIterable, type KeySource } from '@/utils';
+import { isIterable, type KeySource } from '../../utils';
 
 import type { IApiClient, ApiOptions } from '../api.types';
 import type { Model, ModelId, ModelClass, ModelStore } from '../model';

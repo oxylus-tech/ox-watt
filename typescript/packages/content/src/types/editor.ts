@@ -3,8 +3,8 @@ import type { Editor } from "@tiptap/vue-3";
 import type { Ref, ShallowRef, } from "vue";
 
 import type {
-    AnyActionDefinition,
-    ToolsetDefinition,
+    AnyAction,
+    Toolset,
     ToolsetInstance
 } from "ox-watt/ui"
 
@@ -18,8 +18,8 @@ export type EditorConstructor<TEditor extends Editor = Editor> =
 
 export interface EditorToolset<
     TContext extends RichTextContext = RichTextContext,
-    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
-> extends ToolsetDefinition<TContext, TAction>
+    TAction extends AnyAction<TContext> = AnyAction<TContext>
+> extends Toolset<TContext, TAction>
 {
     /**
      * Extensions required to run the toolset.

@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { markRaw, onBeforeUnmount, onMounted, provide, inject, shallowReactive, shallowRef, watch } from "vue";
 import type { InjectionKey, ShallowRef } from "vue";
 
-import { type ToolsetInstance, isActionDefinition } from "ox-watt/ui";
+import { type ToolsetInstance, isAction } from "ox-watt/ui";
 import type {
     EditorToolset,
     RichTextContext,
@@ -58,7 +58,7 @@ export function useRichTextEditor<
         ];
 
         for (const toolset of context.toolset.registry.values()) {
-            if(!isActionDefinition(toolset as TToolset))
+            if(!isAction(toolset as TToolset))
                 extensions.push(...((toolset as TToolset).extensions ?? []));
         }
         // TODO: unique extensions

@@ -2,8 +2,8 @@
 import { useAttrs } from 'vue';
 import OwAction from "./OwAction.vue";
 
-import { useNamedAction } from "@/ui/composables/actions";
-import type { ToolsetInstance } from "@/ui/types/toolsets";
+import { useNamedAction } from "../../composables/actions";
+import type { ToolsetInstance } from "../../types/toolsets";
 
 /**
  * Props accepted by OwNamedAction.

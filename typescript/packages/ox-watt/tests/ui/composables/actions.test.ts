@@ -7,8 +7,8 @@ import {
 } from "@/ui/composables/actions";
 import { useToolset } from "@/ui/composables/toolsets";
 
-import type { ActionDefinition } from "@/ui/types/actions";
-import type { ToolsetDefinition } from "@/ui/types/toolsets";
+import type { Action } from "@/ui/types/actions";
+import type { Toolset } from "@/ui/types/toolsets";
 
 
 interface TestContext {
@@ -24,8 +24,8 @@ interface TestContext {
  * @returns A test action definition.
  */
 function createAction(
-    overrides: Partial<ActionDefinition<TestContext, void, unknown>> = {},
-): ActionDefinition<TestContext, void, unknown> {
+    overrides: Partial<Action<TestContext, void, unknown>> = {},
+): Action<TestContext, void, unknown> {
     return {
         name: "test",
         run: vi.fn(),
@@ -40,9 +40,9 @@ function createAction(
  * @returns A toolset instance.
  */
 function createTestToolset(
-    items: ActionDefinition<TestContext, any, any>[],
+    items: Action<TestContext, any, any>[],
 ) {
-    const definition: ToolsetDefinition<TestContext> = {
+    const definition: Toolset<TestContext> = {
         name: "root",
         items,
     };

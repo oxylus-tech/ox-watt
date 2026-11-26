@@ -22,6 +22,7 @@
     "@vitejs/plugin-vue": "^6.0.11",
     "@vue/test-utils": "^2.6.0",
     "happy-dom": "^21.0.4",
+    "rollup-plugin-visualizer": "^7.3.0",
     "typedoc": "^0.28.20",
     "typedoc-plugin-markdown": "^4.14.1",
     "typescript": "^5.8.3",

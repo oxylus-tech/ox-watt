@@ -1,8 +1,8 @@
 import type { ShallowRef } from 'vue'
 import { cloneDeep } from 'lodash-es';
 
-import { t } from '@/i18n';
-import { ReactiveKeyedStore, type StoreGetOptions } from '@/utils';
+import { t } from '../i18n';
+import { ReactiveKeyedStore, type StoreGetOptions } from '../utils';
 
 import type { SerializerField, RelationDefinitions } from './model.types';
 import { Spec, type SpecClass, type SpecValidationOptions } from './spec';

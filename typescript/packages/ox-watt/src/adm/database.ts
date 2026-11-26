@@ -1,6 +1,6 @@
 import { unref } from 'vue'
 
-import { getKeysBy } from '@/utils';
+import { getKeysBy } from '../utils';
 
 import type { Model, ModelClass, ModelStore } from './model';
 import type { ResolvedRelations, RelationDefinitions } from './model.types'

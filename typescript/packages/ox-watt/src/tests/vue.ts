@@ -2,8 +2,8 @@ import { createApp, defineComponent, h } from 'vue';
 import type { App, Component } from 'vue';
 import { createVuetify } from 'vuetify';
 
-import type { Config } from '@/config';
-import { configKey, provideConfig } from '@/composables';
+import type { Config } from '../config';
+import { configKey, provideConfig } from '../composables';
 
 
 /**

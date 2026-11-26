@@ -1,6 +1,6 @@
 import { type ShallowRef } from 'vue'
 
-import type { KeySource } from '@/utils'
+import type { KeySource } from '../utils'
 import type { Schema } from './schema'
 import type { Model, ModelClass, ModelStore, ModelDeserializeOptions } from './model'
 import type { Repository } from './repository'

@@ -12,7 +12,7 @@
 import { useAttrs, useSlots } from "vue";
 
 
-import type { OwToolsetListProps } from "@/ui/types";
+import type { OwToolsetListProps } from "../../types";
 import OwToolset from "./OwToolset.vue";
 import OwActionListItem from "./OwActionListItem.vue";
 

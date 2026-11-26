@@ -1,5 +1,5 @@
 import type { MaybeRef } from 'vue'
-import { setBaseUrl, resolvePath, joinPaths, getKeysBy, type KeySource } from '@/utils'
+import { setBaseUrl, resolvePath, joinPaths, getKeysBy, type KeySource } from '../utils'
 
 import type { Model, ModelClass, ModelDeserializeOptions, ModelStore } from './model'
 import type {

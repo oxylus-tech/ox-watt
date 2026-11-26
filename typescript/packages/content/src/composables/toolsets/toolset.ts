@@ -2,9 +2,9 @@ import { unref } from "vue";
 import type { Editor } from "@tiptap/core";
 
 import type {
-    ActionDefinition,
-    AnyActionDefinition,
-    ToolsetDefinition,
+    Action,
+    AnyAction,
+    Toolset,
     ToolsetAction,
     ToolsetInstance,
     UseToolsetOptions
@@ -21,7 +21,7 @@ export function useEditorToolset<
 >(
     definition: TToolset,
     context: TContext,
-    options: Omit<UseToolsetOptions, "register"> = {},
+    options: Omit<UseToolsetOptions<TContext>, "register"> = {},
 ): ToolsetInstance<TContext, TToolset> {
     return useToolset(definition, context, {
         ...options, register: true
@@ -102,7 +102,7 @@ function executeCommand(
  *
  * const toolset = {
  *     name: "basic-toolset",
- *     // It create ActionDefinition[] and infers `isEnabled` and `run`
+ *     // It create Action[] and infers `isEnabled` and `run`
  *     items: createActions([
  *         {
  *             name: "bold"
@@ -118,7 +118,7 @@ function executeCommand(
  */
 export function createActions<
     TContext extends RichTextContext,
-    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+    TAction extends AnyAction<TContext> = AnyAction<TContext>
 >(
     inputs: (EditorActionInput<TContext> & Omit<TAction, "run" | "isActive" | "isEnabled">)[]
 ): TAction[] {

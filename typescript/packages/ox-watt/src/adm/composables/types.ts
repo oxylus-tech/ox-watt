@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter, ComputedRef } from 'vue'
 
-import type { KeySource } from '@/utils'
+import type { KeySource } from '../../utils'
 import type { IApiClient, ApiOptions, ApiResult } from '../api.types'
 import type { Database } from '../database'
 import type { Model, ModelId, ModelClass, ModelStore } from '../model'

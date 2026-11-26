@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { useToolset } from "@/ui/composables/toolsets";
 
-import type { ActionDefinition } from "@/ui/types/actions";
-import type { ToolsetDefinition } from "@/ui/types/toolsets";
+import type { Action } from "@/ui/types/actions";
+import type { Toolset } from "@/ui/types/toolsets";
 
 
 interface TestContext {
@@ -21,8 +21,8 @@ interface TestContext {
  */
 function createAction(
     name: string,
-    overrides: Partial<ActionDefinition<TestContext, void, unknown>> = {},
-): ActionDefinition<TestContext, void, unknown> {
+    overrides: Partial<Action<TestContext, void, unknown>> = {},
+): Action<TestContext, void, unknown> {
     return {
         name,
         run: vi.fn(),
@@ -39,8 +39,8 @@ function createAction(
  */
 function createToolset(
     name: string,
-    items: ToolsetDefinition<TestContext>["items"],
-): ToolsetDefinition<TestContext> {
+    items: Toolset<TestContext>["items"],
+): Toolset<TestContext> {
     return {
         name,
         items,
@@ -54,7 +54,7 @@ function createToolset(
  * @returns A toolset instance.
  */
 function createTestToolset(
-    items: ToolsetDefinition<TestContext>["items"],
+    items: Toolset<TestContext>["items"],
 ) {
     return useToolset(
         createToolset("root", items),

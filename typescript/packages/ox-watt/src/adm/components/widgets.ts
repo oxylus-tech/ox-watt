@@ -1,5 +1,5 @@
 import type { Component } from "vue";
-import { KeyedStore } from "@/utils/store";
+import { KeyedStore } from "../../utils/store";
 
 import type { Widget, WidgetConfig } from "../fields/widget";
 

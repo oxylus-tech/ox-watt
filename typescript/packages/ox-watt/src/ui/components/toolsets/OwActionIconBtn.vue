@@ -5,7 +5,7 @@
  */
 import { useAttrs } from "vue";
 
-import type { OwActionProps } from "@/ui/types/actions";
+import type { OwActionProps } from "../../types/actions";
 import OwAction from "./OwAction.vue";
 
 const attrs = useAttrs();
@@ -23,15 +23,15 @@ const props = defineProps<OwActionProps>();
                         :href="action.href"
                         :icon="bindings.icon"
                         :aria-label="bindings.title"
-                        :aria-description="bindings.help"
+                        :aria-description="bindings.description"
                         :disabled="bindings.disabled"
                         @click="action.run?.()"
                     />
                 </template>
 
                 <div>{{ bindings.title }}</div>
-                <div v-if="bindings.help">
-                    <small>{{ bindings.help }}</small>
+                <div v-if="bindings.description">
+                    <small>{{ bindings.description }}</small>
                 </div>
             </v-tooltip>
         </template>

@@ -12,7 +12,7 @@
  */
 import { computed, useAttrs, useSlots } from "vue";
 
-import type { OwToolsetMenuProps } from "@/ui/types";
+import type { OwToolsetMenuProps } from "../../types";
 import OwToolsetList from "./OwToolsetList.vue";
 
 const attrs = useAttrs();

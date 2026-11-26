@@ -1,28 +1,28 @@
 import { computed, toRef, unref, inject, provide } from "vue";
 import type { Ref, InjectionKey } from "vue";
 
-import { t } from "@/i18n"
+import { t } from "../../i18n"
 import {
     createRegistry,
     useRegistry,
     type Registry,
     type UseRegistryOptions
-} from "@/composables/registry"
+} from "../../composables/registry"
 
 import type {
     ActionInstance,
-    AnyActionDefinition,
+    AnyAction,
     ActionParam,
     ActionResult
 } from "../types/actions";
 import type {
-    ToolsetDefinition,
+    Toolset,
     ToolsetAction,
-    ToolsetDefinitionChild,
+    ToolsetChild,
     ToolsetInstance,
     ToolsetInstanceChild
 } from "../types/toolsets";
-import { isActionDefinition, isActionInstance } from "../types/toolsets";
+import { isAction, isActionInstance } from "../types/toolsets";
 
 import { useAction, type UseActionOptions } from "./actions"
 
@@ -34,7 +34,7 @@ export const rootToolsetKey: InjectionKey<ToolsetInstance<any, any>> =
     Symbol("RootToolset");
 
 
-export interface UseToolsetOptions extends UseActionOptions, UseRegistryOptions {
+export interface UseToolsetOptions<TContext> extends UseActionOptions<TContext>, UseRegistryOptions {
     /**
      * Whether to use reactive definitions registry.
      * You probably don't want it.
@@ -58,18 +58,18 @@ export interface UseToolsetOptions extends UseActionOptions, UseRegistryOptions 
  */
 export function createToolset<
     TContext,
-    TToolset extends ToolsetDefinition<TContext, any>=ToolsetDefinition<TContext, any>,
+    TToolset extends Toolset<TContext, any>=Toolset<TContext, any>,
     TAction extends ToolsetAction<TToolset> = ToolsetAction<TToolset>
 >(
     definition: TToolset,
     context: TContext,
-    options: UseToolsetOptions = {},
+    options: UseToolsetOptions<TContext> = {},
 ): ToolsetInstance<TContext, TToolset> {
 
     function factory(
-        item: ToolsetDefinitionChild<TContext, TAction, TToolset>
+        item: ToolsetChild<TContext, TAction, TToolset>
     ): ToolsetInstanceChild<TContext, TToolset> {
-        if(isActionDefinition<TContext, TAction, TToolset>(item))
+        if(isAction<TContext, TAction, TToolset>(item))
             return useAction(item, context, options)
         return createToolset<TContext, TToolset>(item, context, {
             ...options,
@@ -77,7 +77,7 @@ export function createToolset<
         })
     }
 
-    const registry: Registry<ToolsetDefinitionChild<TContext, TAction, TToolset>> = createRegistry({
+    const registry: Registry<ToolsetChild<TContext, TAction, TToolset>> = createRegistry({
         reactive: options.reactive,
         items: definition.items,
         keyField: 'name'
@@ -87,7 +87,7 @@ export function createToolset<
     if(options.namespace) {
         const ns = `${options.namespace}.toolsets.${definition.name}`
         definition.title ??= t(`${ns}.title`)
-        definition.help ??= t(`${ns}.help`)
+        definition.description ??= t(`${ns}.description`)
     }
 
     const toolset = {
@@ -142,12 +142,12 @@ export function createToolset<
  */
 export function useToolset<
     TContext,
-    TToolset extends ToolsetDefinition<TContext, any>=ToolsetDefinition<TContext, any>,
+    TToolset extends Toolset<TContext, any>=Toolset<TContext, any>,
     TAction extends ToolsetAction<TToolset> = ToolsetAction<TToolset>
 >(
     definition: TToolset,
     context: TContext,
-    options: UseToolsetOptions = {},
+    options: UseToolsetOptions<TContext> = {},
 ): ToolsetInstance<TContext, TToolset> {
     const root = inject(rootToolsetKey, null)
     const toolset = createToolset<TContext, TToolset>(definition, context, options)
@@ -168,12 +168,12 @@ export function useToolset<
  */
 export function useRootToolset<
     TContext,
-    TToolset extends ToolsetDefinition<TContext, any>=ToolsetDefinition<TContext, any>,
+    TToolset extends Toolset<TContext, any>=Toolset<TContext, any>,
     TAction extends ToolsetAction<TToolset> = ToolsetAction<TToolset>
 >(
     definition: TToolset,
     context: TContext,
-    options: UseToolsetOptions = {},
+    options: UseToolsetOptions<TContext> = {},
 ): ToolsetInstance<TContext, TToolset> {
     const root = useToolset<TContext, TToolset>(definition, context, {
         ...options,

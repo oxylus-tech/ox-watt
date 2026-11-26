@@ -1,15 +1,17 @@
 import { computed, provide, inject, ref, toRef } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
-import { t } from "@/i18n"
-import { useRegistry, type UseRegistryOptions } from "@/composables/registry"
+import { t } from "../../i18n"
+import { useRegistry, type UseRegistryOptions } from "../../composables/registry"
 
 import type {
-    ActionDefinition,
-    AnyActionDefinition,
+    Action,
+    AnyAction,
     ActionInstance,
     ActionHandler,
-    ActionParam, ActionResult
+    ActionHandlers,
+    ActionParam,
+    ActionResult
 } from "../types/actions";
 import type { ToolsetInstance } from "../types/toolsets"
 
@@ -25,11 +27,11 @@ import type { ToolsetInstance } from "../types/toolsets"
  *   its own behaviors (as `v-btn.href` property).
  *
  */
-export const actionHandlers = new Map<string, ActionHandler<any,any,any>>([
+export const actionHandlers: ActionHandlers<any> = new Map<string, ActionHandler<any,any,any>>([
     [
         "href",
         {
-            run(context: any, definition: ActionDefinition<any,any,any>) {
+            run(context: any, definition: Action<any,any,any>) {
                 if(!definition.href)
                     return
                 window.location.href = definition.href
@@ -42,7 +44,7 @@ export const actionHandlers = new Map<string, ActionHandler<any,any,any>>([
 /**
  * Options for useAction.
  */
-export interface UseActionOptions {
+export interface UseActionOptions<TContext> {
     /**
      * Throws an error if the action is unavailable.
      *
@@ -63,6 +65,11 @@ export interface UseActionOptions {
      * Note that this will update the provided definition in-place.
      */
     namespace?: string;
+
+    /**
+     * Use this action handler instead of default {@link actionHandlers}.
+     */
+    handlers?: ActionHandlers<TContext>
 }
 
 
@@ -89,17 +96,17 @@ export interface UseNamedActionOptions {
  *
  * @param definition - Action definition.
  * @param context - Reactive or non-reactive execution context.
- * @param concurrent - Whether concurrent executions are allowed.
+ * @param options - Options.
  *
  * @returns A contextualized action instance.
  */
 export function useAction<
     TContext,
-    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+    TAction extends AnyAction<TContext> = AnyAction<TContext>
 >(
     definition: TAction,
     context: TContext,
-    options: UseActionOptions = {},
+    options: UseActionOptions<TContext> = {},
 ): ActionInstance<TContext, TAction> {
     const running = ref(false);
     const {concurrent=false} = options
@@ -108,7 +115,7 @@ export function useAction<
     if(options.namespace) {
         const ns = `${options.namespace}.actions.${definition.name}`
         definition.title ??= t(`${ns}.title`)
-        definition.help ??= t(`${ns}.help`)
+        definition.description ??= t(`${ns}.description`)
     }
 
     return {
@@ -124,7 +131,7 @@ export function useAction<
         ),
 
         active: computed(() =>
-            definition.isActive?.(context) ?? false
+            (definition.isActive?.(context) ?? false) || running.value
         ),
 
         running,
@@ -141,7 +148,7 @@ export function useAction<
                 if(definition.run)
                     return await definition.run(context, params as ActionParam<TAction>);
 
-                const handlerKey = definition.handler ?? (definition.href ? "link" : undefined)
+                const handlerKey = ("handler" in definition && definition.handler) ?? (definition.href ? "link" : undefined)
                 if(!handlerKey)
                     throw new Error(`No handler provided on action ${definition.name}.`)
 
@@ -170,7 +177,7 @@ export function useAction<
  */
 export function useNamedAction<
     TContext = unknown,
-    TAction extends AnyActionDefinition<TContext> = AnyActionDefinition<TContext>
+    TAction extends AnyAction<TContext> = AnyAction<TContext>
 >(
     registry: ToolsetInstance<TContext>,
     name: string,

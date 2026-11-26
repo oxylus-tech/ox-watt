@@ -4,7 +4,7 @@
  */
 import { useAttrs } from "vue";
 
-import type { OwActionProps } from "@/ui/types/actions";
+import type { OwActionProps } from "../../types/actions";
 import OwAction from "./OwAction.vue";
 
 const attrs = useAttrs();
@@ -21,7 +21,7 @@ const props = defineProps<OwActionProps>();
                 :href="action.href"
                 :disabled="bindings.disabled"
                 :title="bindings.title"
-                :subtitle="props.noHelp ? '' : bindings.help"
+                :subtitle="props.noDescription ? '' : bindings.description"
                 :prepend-icon="bindings.icon"
                 @click="action.run?.()"
             />
