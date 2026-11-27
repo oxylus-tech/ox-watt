@@ -1,7 +1,7 @@
 import { computed, provide, inject, ref, toRef } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
-import { t } from "../../i18n"
+import { t, defineLazyTranslation } from "../../i18n"
 import { useRegistry, type UseRegistryOptions } from "../../composables/registry"
 
 import type {
@@ -90,22 +90,21 @@ export interface CreateActionOptions {
 export function createAction<
     TContext,
     TAction extends AnyAction<TContext> = AnyAction<TContext>
->: (
+>(
     action: TAction,
-    options: CreateActionOptions
+    options?: CreateActionOptions
 ): TAction {
-    const i18nPrefix = options.i18nPrefix
-    const extra = {}
-    if(i18nPrefix) {
-        extra.title = action.
-        title: action.title ?? t(`${i18nPrefix}.${action.name}.title`),
-        description: action.description ?? t(`${i18nPrefix}.${action.name}.description`),
+    let result = {...action}
+    if(options?.i18nPrefix) {
+        const prefix = `${options.i18nPrefix}.${action.name}`;
+
+        if (!action.title)
+            defineLazyTranslation(result, "title", `${prefix}.title`);
+        if (!action.description)
+            defineLazyTranslation(result, "description", `${prefix}.description`);
     }
 
-    return {
-        ...action,
-        ...extra
-    }
+    return result
 }
 
 

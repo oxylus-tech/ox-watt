@@ -361,6 +361,40 @@ export function tobj<const TKeys extends string[]>(
 }
 
 
-export function tNamedI18n(prefix: string) -> NamedDefinitionBase {
+export function tNamedI18n(prefix: string): NamedDefinitionBase {
     return tobj(prefix, ["title", "description"])
+}
+
+
+/**
+ * Defines a lazily translated property on an object.
+ *
+ * The property is replaced by its resolved value on first access.
+ *
+ * @param target - Object receiving the property.
+ * @param property - Property name.
+ * @param translationKey - Translation key.
+ */
+export function defineLazyTranslation(
+    target: object,
+    property: "title" | "description",
+    translationKey: string,
+): void {
+    Object.defineProperty(target, property, {
+        enumerable: true,
+        configurable: true,
+
+        get() {
+            const value = t(translationKey);
+
+            Object.defineProperty(target, property, {
+                value,
+                enumerable: true,
+                configurable: true,
+                writable: true,
+            });
+
+            return value;
+        },
+    });
 }

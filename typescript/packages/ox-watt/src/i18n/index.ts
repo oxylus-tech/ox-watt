@@ -1,4 +1,4 @@
-export { I18nManager, i18n, t, te } from './manager';
+export * from './manager';
 
 export {
     getLocaleFromPath,

@@ -15,7 +15,7 @@ const props = defineProps<{
     <v-btn
         v-show="props.visible"
         :prepend-icon="props.title ? props.icon : ''"
-        :icon="props.title ? '' : props.icon : ''"
+        :icon="props.title ? '' : props.icon"
         :title="props.description"
         :aria-label="props.title || ''"
         :aria-description="props.description"

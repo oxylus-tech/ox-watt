@@ -4,7 +4,7 @@
  */
 import { useAttrs } from "vue";
 
-import type { OwActionProps } from "./actions";
+import type { OwActionProps } from "./types";
 import OwAction from "./OwAction.vue";
 
 const attrs = useAttrs();

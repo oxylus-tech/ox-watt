@@ -2,7 +2,7 @@ import { Node, type NodeConfig } from '@tiptap/core';
 import type { DOMOutputSpec } from '@tiptap/pm/model';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 
-import OxVariableNode from './components/blocks/OxVariableNode';
+import OwVariableNode from './components/blocks/OwVariableNode';
 import {Variable, VariableGroup, BlockAction, VariableAction} from "./types/blocks"
 
 
@@ -36,23 +36,34 @@ export interface CreateBlockNodeOptions<
     extends Partial<Omit<NodeConfig<TOptions>, "name">>
 {
     /** Whether the node is inline or not. **/
-    inline: boolean;
+    inline?: boolean;
 
     /** Default node options (provided by addOptions). **/
-    options: Omit<TOptions, "block">;
+    options?: Omit<TOptions, "block">;
 }
 
 
 /**
- * Return Variable from the provided variable groups by name.
+ * Resolves a variable from a collection of variable groups.
  *
- * @param variables: an array of variable groups.
- * @param name: dotted path to a variable.
+ * @param variables - Variable groups to search.
+ * @param name - Dotted variable path in the form "group.variable".
+ * @returns The matching variable, or undefined if the path is invalid or unknown.
  */
-export function resolveVariable(variables: VariableGroup[], name: string): Variable | undefined {
-    const [groupName, variableName] = name.split(".", 1)
-    const group = variables.find(g => g.name == groupName)
-    return group.items.find(v => v.name == variableName)
+export function resolveVariable(
+    variables: VariableGroup[],
+    name: string,
+): Variable | undefined {
+    const parts = name.split(".");
+
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+        return undefined;
+    }
+
+    const [groupName, variableName] = parts;
+    const group = variables.find(group => group.name === groupName);
+
+    return group?.items?.find(variable => variable.name === variableName);
 }
 
 
@@ -60,14 +71,14 @@ export function resolveVariable(variables: VariableGroup[], name: string): Varia
  * Creates the base configuration for a block node.
  *
  * @param name - Programmatic name of the node.
- * @param inline - Whether the node is inline.
+ * @param options - Options.
  * @returns TipTap node configuration.
  */
 function createBlockNodeConfig<
     TOptions extends BlockNodeOptions = BlockNodeOptions
 >(
     name: string,
-    options: CreateBlockNodeOptions<TOptions>,
+    options: CreateBlockNodeOptions<TOptions> = {},
 ): Partial<NodeConfig<TOptions>> {
     const {inline, options: nodeOptions, ...nodeConfig} = options
 
@@ -76,7 +87,7 @@ function createBlockNodeConfig<
         name,
         inline,
         group: inline ? 'inline' : 'block',
-        content: inline ? undefined : 'inline*',
+        content: options.content ?? inline ? undefined : 'block*',
         atom: options.atom ?? inline,
         isolating: options.isolating ?? !inline,
         draggable: options.draggable ?? inline,
@@ -84,7 +95,7 @@ function createBlockNodeConfig<
         addOptions(): TOptions {
             return {
                 block: null,
-                ...nodeOptions,
+                ...(nodeOptions ?? {}),
             };
         },
     };
@@ -102,9 +113,9 @@ function createVariableNodeConfig<
     TOptions extends VariableNodeOptions = VariableNodeOptions
 >(
     name: string,
-    options: CreateBlockNodeOptions<TOptions>,
+    options?: CreateBlockNodeOptions<TOptions>,
 ): Partial<NodeConfig<TOptions>> {
-    const inline = options.inline;
+    const inline = options?.inline;
     const tag = inline ? 'span' : 'div';
 
     return {
@@ -162,7 +173,7 @@ function createVariableNodeConfig<
         },
 
         addNodeView() {
-            return VueNodeViewRenderer(OxVariableNode);
+            return VueNodeViewRenderer(OwVariableNode);
         },
     };
 }

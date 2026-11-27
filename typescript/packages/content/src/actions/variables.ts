@@ -1,26 +1,20 @@
 import { t } from "vue"
-import { Editor } from "@tiptap/vue"
+import { Editor } from "@tiptap/vue-3"
+import {Selection} from "@tiptap/pm/state"
 
 import type { AnyAction } from "ox-watt";
 import { createAction } from "ox-watt";
+
 import type {
     VariableAction,
     VariableActionParam,
     IfVariableAction,
     RichTextContext
-} from "./types"
+} from "../types"
+import { IfVariableNode, VariableNode } from "../blocks"
+import { moveSelectionAfterParent } from "../utils"
 
 
-
-function moveSelectionAfterParent(editor: Editor): ChainedCommands | undefined {
-    return editor.chain().focus()
-        .command(({ tr, dispatch }) => {
-            const pos = editor.state.selection.$anchor.after(); // enter the block
-            tr.setSelection( Selection.near(tr.doc.resolve(pos)) );
-            if (dispatch) dispatch(tr);
-            return true;
-        })
-}
 
 
 export function createVariableAction<
@@ -29,8 +23,8 @@ export function createVariableAction<
 >(
     action: (Omit<TAction, "run" | "isActive" | "isEnabled">),
     options: CreateActionOptions
->: TAction
-(
+): TAction
+{
     return createAction({
         ...action,
 
@@ -77,7 +71,7 @@ export function createVariableAction<
             }).run();
         },
     }, options);
-)
+}
 
 
 export const variableAction = createVariableAction(
@@ -95,3 +89,18 @@ export const ifVariableAction = createVariableAction(
     },
     {i18nPrefix: "ow-content.actions"}
 )
+
+
+export const variablesToolset = {
+    name: "variables",
+
+    items: [
+        variableAction,
+        ifVariableAction
+    ],
+
+    extensions: [
+        VariableNode,
+        IfVariableNode
+    ],
+}

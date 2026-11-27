@@ -89,34 +89,15 @@ function executeCommand(
 
     return execute.apply(chain, args).run();
 }
-
-
 /**
  * Normalizes declarative editor actions into toolset action definitions.
  *
  * @template TContext - Action execution context.
+ * @template TAction - Resulting action definition type.
  *
  * @param inputs - Declarative action definitions.
- * @param namespace - I18n namespace to get information from.
- * @returns Normalized action definitions is an object (by name)
- *
- * @example
- *
- * const toolset = {
- *     name: "basic-toolset",
- *     // It create Action[] and infers `isEnabled` and `run`
- *     items: createActions([
- *         {
- *             name: "bold"
- *             command: "toggleBold"
- *         },
- *         {
- *             name: "right"
- *             command: ["textAlign", "right"],
- *             isActive: {"text-align": "right"}
- *         },
- *     ], {i18nPrefix: 'my_app.actions'})
- * }
+ * @param options - Action creation options.
+ * @returns Normalized action definitions.
  */
 export function createEditorActions<
     TContext extends RichTextContext = RichTextContext,
@@ -125,45 +106,33 @@ export function createEditorActions<
     inputs: (EditorActionInput<TContext> & Omit<TAction, "run" | "isActive" | "isEnabled">)[],
     options: CreateActionOptions
 ): TAction[] {
-    return inputs.map((input) => createEditorActions(input, options))
+    return inputs.map((input) => createEditorAction<TContext, TAction>(input, options));
 }
 
-
-
-
 /**
- * Normalizes declarative editor action into action definitions.
+ * Normalizes a declarative editor action into an action definition.
  *
  * @template TContext - Action execution context.
+ * @template TAction - Resulting action definition type.
  *
- * @param input - Declarative action definitions.
- * @param namespace - I18n namespace to get information from.
- * @returns Normalized action definitions is an object (by name)
- *
- * @example
- *
- * createEditorAction(
- *     {
- *        name: "bold"
- *        command: "toggleBold"
- *     },
- *     { i18nPrefix: 'my_app.actions' }
- * )
+ * @param action - Declarative action definition.
+ * @param options - Action creation options.
+ * @returns Normalized action definition.
  */
 export function createEditorAction<
     TContext extends RichTextContext = RichTextContext,
     TAction extends AnyAction<TContext> = AnyAction<TContext>
 >(
-    action: (EditorActionInput<TContext> & Omit<TAction, "run" | "isActive" | "isEnabled">),
+    action: EditorActionInput<TContext> & Omit<TAction, "run" | "isActive" | "isEnabled">,
     options: CreateActionOptions
-): TAction[] {
+): TAction {
     const {
         command,
         run,
         isActive,
         isEnabled,
         ...attrs
-    } = input;
+    } = action;
 
     return createAction({
         ...attrs,
@@ -183,6 +152,6 @@ export function createEditorAction<
             ? isActive
             : isActive !== undefined
                 ? (context: TContext) => unref(context.editor).isActive(isActive)
-                : (context: TContext) => unref(context.editor).isActive(input.name)
+                : (context: TContext) => unref(context.editor).isActive(action.name)
     } as unknown as TAction);
 }

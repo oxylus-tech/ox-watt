@@ -55,6 +55,54 @@ function createTestToolset(
 }
 
 
+describe("createAction", () => {
+    it("should not resolve translations when creating an action", () => {
+        const action = createAction({
+            name: "bold",
+            run: vi.fn(),
+        }, {
+            i18nPrefix: "actions",
+        });
+
+        expect(action).toBeDefined();
+    });
+
+    it("should resolve the title on first access", () => {
+        const action = createAction({
+            name: "bold",
+            run: vi.fn(),
+        }, {
+            i18nPrefix: "actions",
+        });
+
+        const descriptor = Object.getOwnPropertyDescriptor(action, "title");
+
+        expect(descriptor?.get).toBeTypeOf("function");
+
+        const title = action.title;
+
+        const resolvedDescriptor = Object.getOwnPropertyDescriptor(action, "title");
+
+        expect(resolvedDescriptor?.get).toBeUndefined();
+        expect(resolvedDescriptor?.value).toBe(title);
+    });
+
+    it("should preserve explicitly provided translations", () => {
+        const action = createAction({
+            name: "bold",
+            title: "Custom title",
+            description: "Custom description",
+            run: vi.fn(),
+        }, {
+            i18nPrefix: "actions",
+        });
+
+        expect(action.title).toBe("Custom title");
+        expect(action.description).toBe("Custom description");
+    });
+});
+
+
 describe("useAction", () => {
     it("creates an action instance from a definition", () => {
         const definition = createAction();

@@ -1,6 +1,6 @@
 export {default as OwAction} from "./OwAction.vue"
+export {default as OwActionBtn} from "./OwActionBtn.vue"
 export {default as OwNamedAction} from "./OwNamedAction.vue"
-export {default as OwActionIconBtn} from "./OwActionIconBtn.vue"
 export {default as OwActionListItem} from "./OwActionListItem.vue"
 export {default as OwToolset} from "./OwToolset.vue"
 export {default as OwToolsetList} from "./OwToolsetList.vue"
