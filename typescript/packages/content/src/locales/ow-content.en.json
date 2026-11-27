@@ -1,5 +1,11 @@
 {
     "ow-content": {
+        "actions": {
+            "variable": {
+                "title": "Variable",
+                "description": "Insert a dynamic value",
+            },
+        },
         "toolsets": {
             "basic": {
                 "title": "Formatting",

@@ -17,7 +17,7 @@ export interface Variable extends NamedDefinition {
  * A group of variables.
  */
 export interface VariableGroup
-    extends Variable, NamedGroupDefinition<Variable>
+    extends NamedGroupDefinition<Variable>
 {
 }
 
@@ -28,14 +28,13 @@ export type BlockAction<
     TContext extends RichTextContext=RichTextContext,
     TParams = void,
     TResult = unknown
-> = Action<TContext, TParams, TResult> & {
-    inline?: boolean
-}
+> = Action<TContext, TParams, TResult>
 
 /**
  * Parameters of a variable action.
  */
 export interface VariableActionParam {
+    group: string;
     variable: Variable;
 }
 
@@ -47,5 +46,14 @@ export type VariableAction<
     TParams extends VariableActionParam = VariableActionParam,
     TResult = unknown
 > = BlockAction<TContext, TParams, TResult> & {
-    variables: Variable[]
+    variables: VariableGroup[]
 }
+
+/**
+ * An action that inserts a conditional variable block.
+ */
+export type IfVariableAction<
+    TContext extends RichTextContext = RichTextContext,
+    TParams extends VariableActionParam = VariableActionParam,
+    TResult = unknown
+> = VariableAction<TContext, TParams, TResult>;

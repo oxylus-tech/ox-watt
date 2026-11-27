@@ -1,5 +1,6 @@
 import { createI18n, type Composer } from 'vue-i18n';
 
+import type { NamedDefinitionBase } from "../types"
 import { detectLocale } from './locale';
 import { getStaticLocaleResources, getDomLocaleResources, } from './resources';
 
@@ -340,4 +341,26 @@ export function t(key: string, ...args: unknown[]): string {
  */
 export function te(key: string, ...args: unknown[]): boolean {
     return Reflect.apply(i18n.composer.te, i18n.composer, [key, ...args]) as boolean;
+}
+
+
+/**
+ * Creates a translation object from a namespace and a list of keys.
+ *
+ * @param prefix - Translation namespace.
+ * @param keys - Keys to translate.
+ * @returns An object whose keys match the provided keys.
+ */
+export function tobj<const TKeys extends string[]>(
+    prefix: string,
+    keys: TKeys
+): Record<TKeys[number], string> {
+    return Object.fromEntries(
+        keys.map(k => [k, t(`${prefix}.${k}`)])
+    ) as Record<TKeys[number], string>;
+}
+
+
+export function tNamedI18n(prefix: string) -> NamedDefinitionBase {
+    return tobj(prefix, ["title", "description"])
 }

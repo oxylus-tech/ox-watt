@@ -3,79 +3,58 @@ import type { DOMOutputSpec } from '@tiptap/pm/model';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 
 import OxVariableNode from './components/blocks/OxVariableNode';
+import {Variable, VariableGroup, BlockAction, VariableAction} from "./types/blocks"
 
-/**
- * Describes a block available in the editor.
- */
-export interface BlockDefinition {
-    /** Programmatic name of the block. */
-    name: string;
-
-    /** Whether the block is inline. */
-    inline?: boolean;
-
-    /** Title displayed to the user. */
-    title: string;
-
-    /** Icon displayed to the user. */
-    icon: string;
-
-    /** Description of the block. */
-    description: string;
-
-    /** Group used to organize blocks. */
-    group: string;
-}
-
-/**
- * Describes a variable available in the editor.
- */
-export interface BlockVariable {
-    /** Programmatic name of the variable. */
-    name: string;
-
-    /** Title displayed to the user. */
-    title: string;
-
-    /** Description of the variable. */
-    description?: string | null;
-}
 
 /**
  * Options shared by block node extensions.
  */
-export interface BlockNodeOptions {
+export interface BlockNodeOptions<
+    TBlock extends BlockAction = BlockAction
+> {
     /** Block definition associated with the node. */
-    block: BlockDefinition | null;
+    block: TBlock | null;
 
-    /** Whether the node is inline. */
-    inline: boolean;
-
-    /** Optional title displayed by the node view. */
+    /**
+     * Optional title displayed by the node view.
+     *
+     * Overrides the one provided by block.
+     */
     title?: string;
 }
 
-/**
- * Options for variable node extensions.
- */
-export interface VariableNodeOptions extends BlockNodeOptions {
-    /** Variables available for this node. */
-    variables: BlockVariable[];
+
+export interface VariableNodeOptions
+    extends BlockNodeOptions<VariableAction>
+{
 }
 
-/**
- * Attributes stored on variable nodes.
- */
-export interface VariableNodeAttributes {
-    /** Programmatic name of the variable. */
-    name: string | null;
 
-    /** Title displayed for the variable. */
-    title: string | null;
+export interface CreateBlockNodeOptions<
+    TOptions extends BlockNodeOptions = BlockNodeOptions
+>
+    extends Partial<Omit<NodeConfig<TOptions>, "name">>
+{
+    /** Whether the node is inline or not. **/
+    inline: boolean;
 
-    /** Description of the variable. */
-    description: string | null;
+    /** Default node options (provided by addOptions). **/
+    options: Omit<TOptions, "block">;
 }
+
+
+/**
+ * Return Variable from the provided variable groups by name.
+ *
+ * @param variables: an array of variable groups.
+ * @param name: dotted path to a variable.
+ */
+export function resolveVariable(variables: VariableGroup[], name: string): Variable | undefined {
+    const [groupName, variableName] = name.split(".", 1)
+    const group = variables.find(g => g.name == groupName)
+    return group.items.find(v => v.name == variableName)
+}
+
 
 /**
  * Creates the base configuration for a block node.
@@ -84,51 +63,59 @@ export interface VariableNodeAttributes {
  * @param inline - Whether the node is inline.
  * @returns TipTap node configuration.
  */
-function createBlockNodeConfig(
+function createBlockNodeConfig<
+    TOptions extends BlockNodeOptions = BlockNodeOptions
+>(
     name: string,
-    inline = false,
-): Partial<NodeConfig<VariableNodeOptions>> {
+    options: CreateBlockNodeOptions<TOptions>,
+): Partial<NodeConfig<TOptions>> {
+    const {inline, options: nodeOptions, ...nodeConfig} = options
+
     return {
+        ...nodeConfig,
         name,
+        inline,
         group: inline ? 'inline' : 'block',
         content: inline ? undefined : 'inline*',
-        atom: inline,
-        inline,
-        isolating: !inline,
-        draggable: inline,
+        atom: options.atom ?? inline,
+        isolating: options.isolating ?? !inline,
+        draggable: options.draggable ?? inline,
 
-        addOptions(): VariableNodeOptions {
+        addOptions(): TOptions {
             return {
                 block: null,
-                inline,
-                variables: [],
-                ...(!inline ? { title: '' } : {}),
+                ...nodeOptions,
             };
         },
     };
 }
 
+
 /**
  * Creates a variable node extension configuration.
  *
  * @param name - Programmatic name of the node.
- * @param inline - Whether the node is inline.
+ * @param options - options.
  * @returns TipTap node configuration.
  */
-function createVariableNodeConfig(
+function createVariableNodeConfig<
+    TOptions extends VariableNodeOptions = VariableNodeOptions
+>(
     name: string,
-    inline = false,
-): Partial<NodeConfig<VariableNodeOptions>> {
+    options: CreateBlockNodeOptions<TOptions>,
+): Partial<NodeConfig<TOptions>> {
+    const inline = options.inline;
     const tag = inline ? 'span' : 'div';
 
     return {
-        ...createBlockNodeConfig(name, inline),
+        ...createBlockNodeConfig(name, options),
 
-        addAttributes(): Record<keyof VariableNodeAttributes, { default: null }> {
+        addAttributes(): Record<keyof Variable, { default: null }> {
             return {
                 name: { default: null },
                 title: { default: null },
                 description: { default: null },
+                icon: { default: null },
             };
         },
 
@@ -138,23 +125,24 @@ function createVariableNodeConfig(
                     tag: `${tag}[data-block]`,
 
                     getAttrs: (element: HTMLElement) => {
-                        if (element.dataset.block !== name) {
+                        if (element.dataset.block !== name)
                             return false;
-                        }
 
                         const variableName = element.dataset.blockVariable;
-                        const variable = this.options.variables.find(
-                            (item) => item.name === variableName,
-                        );
+                        const block = this.options.block
 
-                        if (!variable) {
+                        if(!variableName || !block)
+                            return false
+
+                        const variable = resolveVariable(block.variables, variableName)
+                        if (!variable)
                             return false;
-                        }
 
                         return {
-                            name: variable.name,
+                            name: variableName,
                             title: variable.title,
                             description: variable.description ?? null,
+                            icon: variable.icon ?? null,
                         };
                     },
                 },
@@ -181,7 +169,7 @@ function createVariableNodeConfig(
 
 /** Inline variable node extension. */
 export const VariableNode = Node.create<VariableNodeOptions>(
-    createVariableNodeConfig('variable', true),
+    createVariableNodeConfig('variable', {inline: true}),
 );
 
 /** Conditional block node extension. */

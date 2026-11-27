@@ -2,6 +2,7 @@ import { computed, toRef, unref, inject, provide } from "vue";
 import type { Ref, InjectionKey } from "vue";
 
 import { t } from "../../i18n"
+import { resolveTreePath } from "../../utils"
 import {
     createRegistry,
     useRegistry,
@@ -84,12 +85,6 @@ export function createToolset<
     })
     const { instances, get: getInstance, ...registryContext } = useRegistry(registry, factory, options)
 
-    if(options.namespace) {
-        const ns = `${options.namespace}.toolsets.${definition.name}`
-        definition.title ??= t(`${ns}.title`)
-        definition.description ??= t(`${ns}.description`)
-    }
-
     const toolset = {
         ...registryContext,
         instances,
@@ -97,21 +92,18 @@ export function createToolset<
         context,
 
         get(path: string): ToolsetInstanceChild<TContext, TToolset>|undefined {
-            const [name, ...stems] = path.split(".")
-            if(!name)
-                return undefined
+            return resolveTreePath(
+                this, path,
+                (node: ToolsetInstanceChild<TContext, TToolset>, name: string) => {
+                    if(node === this)
+                        return getInstance(name)
 
-            let item = getInstance(name)
-            for(const stem of stems) {
-                if(!item)
-                    return undefined
+                    if(isActionInstance(node))
+                        throw new Error(`Can't get the child of item "${name}" in "${path}": it is an action`)
 
-                if(isActionInstance(item))
-                    throw new Error(`The item "${stem}" in "${path}" is an action (shall be a toolset)`)
-
-                item = item.get(stem)
-            }
-            return item
+                    return node.get(name)
+                }
+            )
         },
 
         run(path: string, params?: ActionParam<TAction>): Promise<ActionResult<TAction>> {

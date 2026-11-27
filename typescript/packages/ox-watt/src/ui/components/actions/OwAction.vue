@@ -7,7 +7,8 @@
  */
 import { computed, useAttrs, watchEffect } from "vue";
 
-import type { OwActionProps } from "../../types/actions";
+import OwActionBtn from "./OwActionBtn"
+import type { OwActionProps } from "./types";
 
 const props = defineProps<OwActionProps>();
 const attrs = useAttrs();
@@ -24,11 +25,14 @@ const bindings = computed(() => {
         return undefined;
     }
 
-    console.log(">>>>", props, props.title)
     return {
         disabled: Boolean(attrs.disabled) || !action.enabled.value,
-        title: props.title ?? action.definition.title ?? "",
-        description: props.description ?? action.definition.description,
+        title: props.noTitle
+            ? ''
+            : (props.title ?? action.definition.title ?? ""),
+        description: props.noDescription
+            ? ''
+            : props.description ?? action.definition.description,
         icon: action.definition.icon,
     };
 });
@@ -52,19 +56,14 @@ defineExpose({
         :action="props.action"
         v-bind="bindings"
     >
-        <v-btn
-            v-show="props.action.visible"
+        <OwActionBtn
             v-bind="attrs"
-            :href="props.action.href"
-            :prepend-icon="bindings.title ? bindings.icon : ''"
-            :icon="!bindings.title ? bindings.icon : ''"
-            :title="props.noDescription ? '' : bindings.description"
-            :aria-label="bindings.title || ''"
-            :aria-description="bindings.description"
+            :visible="props.actions.visible"
+            :title="bindings.title"
+            :description="bindings.description"
+            :icon="bindings.icon"
             :disabled="bindings.disabled"
-            @click="props.action.run?.()"
-        >
-            {{ bindings.title || '' }}
-        </v-btn>
+            :run="props.action.run?.()"
+            />
     </slot>
 </template>

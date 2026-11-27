@@ -4,11 +4,11 @@
  */
 import { useAttrs } from "vue";
 
-import type { OwActionProps } from "../../types/actions";
+import type { OwActionProps } from "./actions";
 import OwAction from "./OwAction.vue";
 
 const attrs = useAttrs();
-const props = defineProps<OwActionProps>();
+const props = defineProps<Omit<OwActionProps, "noTitle">>();
 </script>
 
 <template>

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
-import OwToolsetList from '@/ui/components/toolsets/OwToolsetList.vue';
+import OwToolsetList from '@/ui/components/actions/OwToolsetList.vue';
 import { createAction, createToolset } from './fixtures';
 
 const VListStub = defineComponent({

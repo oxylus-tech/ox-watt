@@ -1,4 +1,4 @@
-// tests/ui/components/toolsets/fixtures.ts
+// tests/ui/components/actions/fixtures.ts
 
 import { useAction } from '@/ui/composables/actions';
 

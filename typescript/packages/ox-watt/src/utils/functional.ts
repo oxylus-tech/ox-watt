@@ -106,3 +106,32 @@ export function pathHead(path: string, sep: string = "."): [string,string|undefi
         path.substring(sepIndex+1),
     ]
 }
+
+/**
+ * Resolve path to a tree node child.
+ *
+ * @param path: path to the child.
+ * @param node: the root node.
+ * @param get: get child by name.
+ * @param sep: path name's separator (default is ".")
+ */
+export function resolveTreePath<
+    TNode,
+>(
+    root: TNode,
+    path: string,
+    get: (node: TNode, path: string) => TNode,
+    sep: string = "."
+): TNode | undefined {
+    const [name, ...stems] = path.split(".")
+    if(!name)
+        return undefined
+
+    let item = get(root, name);
+    for(const stem of stems) {
+        if(!item)
+            return undefined
+        item = get(item, stem)
+    }
+    return item
+}

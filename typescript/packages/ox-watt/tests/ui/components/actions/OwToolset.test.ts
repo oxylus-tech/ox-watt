@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
-import OwToolset from '@/ui/components/toolsets/OwToolset.vue';
+import OwToolset from '@/ui/components/actions/OwToolset.vue';
 import { createAction, createToolset } from './fixtures';
 
 const OwActionStub = defineComponent({

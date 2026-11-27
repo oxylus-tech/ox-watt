@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
-import OwToolsetMenu from '@/ui/components/toolsets/OwToolsetMenu.vue';
+import OwToolsetMenu from '@/ui/components/actions/OwToolsetMenu.vue';
 import { createToolset } from './fixtures';
 
 const VMenuStub = defineComponent({

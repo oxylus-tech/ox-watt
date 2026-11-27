@@ -2,7 +2,7 @@ import type { Editor } from "@tiptap/core";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 
-import type { EditorToolset, RichTextContext } from "../../types/editor";
+import type { EditorToolset, RichTextContext } from "../types/editor";
 import { createActions } from "./toolset";
 
 

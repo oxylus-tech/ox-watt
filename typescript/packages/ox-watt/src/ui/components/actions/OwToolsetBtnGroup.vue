@@ -11,8 +11,7 @@
  */
 import { useAttrs, useSlots } from "vue";
 
-
-import type { OwToolsetProps } from "../../types/toolsets";
+import type { OwToolsetProps } from "./types";
 import OwToolset from "./OwToolset.vue";
 import OwActionListItem from "./OwActionListItem.vue";
 

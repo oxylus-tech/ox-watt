@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
-import OwNamedAction from '@/ui/components/toolsets/OwNamedAction.vue';
+import OwNamedAction from '@/ui/components/actions/OwNamedAction.vue';
 import { createAction, createToolset } from './fixtures';
 
 const VBtnStub = defineComponent({

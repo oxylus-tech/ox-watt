@@ -59,14 +59,6 @@ export interface UseActionOptions<TContext> {
     concurrent?: boolean;
 
     /**
-     * Translation namespace used to get the values for each missing
-     * human displayed text.
-     *
-     * Note that this will update the provided definition in-place.
-     */
-    namespace?: string;
-
-    /**
      * Use this action handler instead of default {@link actionHandlers}.
      */
     handlers?: ActionHandlers<TContext>
@@ -85,6 +77,36 @@ export interface UseNamedActionOptions {
     required?: boolean;
 }
 
+
+export interface CreateActionOptions {
+    i18nPrefix: string
+}
+
+/**
+ * Create an action definition using provided input and options.
+ *
+ * It will ensure title and description are set.
+ */
+export function createAction<
+    TContext,
+    TAction extends AnyAction<TContext> = AnyAction<TContext>
+>: (
+    action: TAction,
+    options: CreateActionOptions
+): TAction {
+    const i18nPrefix = options.i18nPrefix
+    const extra = {}
+    if(i18nPrefix) {
+        extra.title = action.
+        title: action.title ?? t(`${i18nPrefix}.${action.name}.title`),
+        description: action.description ?? t(`${i18nPrefix}.${action.name}.description`),
+    }
+
+    return {
+        ...action,
+        ...extra
+    }
+}
 
 
 /**
@@ -111,12 +133,6 @@ export function useAction<
     const running = ref(false);
     const {concurrent=false} = options
     let executionCount = 0;
-
-    if(options.namespace) {
-        const ns = `${options.namespace}.actions.${definition.name}`
-        definition.title ??= t(`${ns}.title`)
-        definition.description ??= t(`${ns}.description`)
-    }
 
     return {
         definition,

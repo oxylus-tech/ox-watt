@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
-import OwAction from '@/ui/components/toolsets/OwAction.vue';
+import OwAction from '@/ui/components/actions/OwAction.vue';
 import { createAction } from './fixtures';
 
 /**

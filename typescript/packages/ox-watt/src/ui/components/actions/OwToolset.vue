@@ -14,7 +14,7 @@ import { computed, useSlots } from "vue";
 
 import OwAction from "./OwAction.vue";
 import { isActionInstance } from "../../types";
-import type { OwToolsetProps } from "../../types";
+import type { OwToolsetProps } from "./types";
 
 const props = defineProps<OwToolsetProps>();
 const slots = useSlots();
