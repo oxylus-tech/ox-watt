@@ -1,4 +1,4 @@
-export * from './action'
+export * from './actions'
 export * from './blocks'
 export * from './composables'
 export * from './components'

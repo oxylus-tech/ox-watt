@@ -1,16 +1,24 @@
-import type { ActionInstance, ToolsetInstance } from "../../types"
+import type { ActionInstance, ToolsetInstance, AnyAction, ActionParam } from "../../types"
 
 
 /**
  * Properties of the {@link OwAction} component.
  */
-export interface OwActionProps {
+export interface OwActionProps<
+    TContext,
+    TAction extends AnyAction<TContext> = AnyAction<TContext>
+> {
     /**
      * Existing action instance.
      *
      * Takes precedence over the action resolved through the registry.
      */
-    action: ActionInstance<any, any>;
+    action: ActionInstance<TContext, TAction>;
+
+    /**
+     * Parameters to pass to
+     */
+    params?: ActionParam<TAction>;
 
     /**
      * Overrides the action definition label.

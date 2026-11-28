@@ -7,10 +7,10 @@
  */
 import { computed, useAttrs, watchEffect } from "vue";
 
-import OwActionBtn from "./OwActionBtn"
+import OwActionBtn from "./OwActionBtn.vue"
 import type { OwActionProps } from "./types";
 
-const props = defineProps<OwActionProps>();
+const props = defineProps<OwActionProps<any,any>>();
 const attrs = useAttrs();
 
 /**
@@ -58,12 +58,12 @@ defineExpose({
     >
         <OwActionBtn
             v-bind="attrs"
-            :visible="props.actions.visible"
+            v-show="props.action.visible"
             :title="bindings.title"
             :description="bindings.description"
             :icon="bindings.icon"
             :disabled="bindings.disabled"
-            :run="props.action.run?.()"
+            @click="props.action.run?.(props.params)"
             />
     </slot>
 </template>

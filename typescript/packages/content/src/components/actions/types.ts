@@ -4,15 +4,16 @@ import type {
 } from "ox-watt"
 import type {
     VariableAction,
+    VariableGroup,
     RichTextContext
 } from "../../types"
 
 
 export interface OwVariableActionProps<
-    TContext extends RichTextContext = RichTextContext
+    TAction extends VariableAction = VariableAction
 >
-    extends OwActionProps
+    extends OwActionProps<RichTextContext, TAction>
 {
-    /** The variable action instance. **/
-    action: ActionInstance<VariableAction, TContext>,
+    /** Variables **/
+    variables?: VariableGroup[]
 }

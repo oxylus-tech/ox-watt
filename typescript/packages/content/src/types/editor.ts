@@ -3,7 +3,7 @@ import type { Editor } from "@tiptap/vue-3";
 import type { Ref, ShallowRef, } from "vue";
 
 import type {
-    AnyAction,
+    Action,
     Toolset,
     ToolsetInstance
 } from "ox-watt/ui"
@@ -16,10 +16,14 @@ export type EditorConstructor<TEditor extends Editor = Editor> =
     new (options?: Partial<EditorOptions>) => TEditor;
 
 
+export type EditorAction<TParams=void, TResult=unknown> = Action<RichTextContext, TParams, TResult>
+
+export type AnyEditorAction = EditorAction<any, any>;
+
+
 export interface EditorToolset<
-    TContext extends RichTextContext = RichTextContext,
-    TAction extends AnyAction<TContext> = AnyAction<TContext>
-> extends Toolset<TContext, TAction>
+    TAction extends AnyEditorAction = AnyEditorAction
+> extends Toolset<RichTextContext, TAction>
 {
     /**
      * Extensions required to run the toolset.
@@ -32,12 +36,38 @@ export interface EditorToolset<
  * Shared configuration for rich text editors.
  */
 export interface RichTextEditorConfig<
-    TContext extends RichTextContext = RichTextContext,
-    TToolset extends EditorToolset<TContext> = EditorToolset<TContext>
+    TToolset extends EditorToolset = EditorToolset
 >
 {
     /**
      * Automatically include TipTap StarterKit.
+     *
+     * When not provided, don't forget to create base nodes, as:
+     *
+     * ```ts
+     * options.extensions = [
+     *     Node.create({
+     *         name: "doc",
+     *         topNode: true,
+     *         content: "block+",
+     *     }),
+     *     Node.create({
+     *         name: "paragraph",
+     *         group: "block",
+     *         content: "inline*",
+     *         parseHTML() {
+     *             return [{ tag: "p" }];
+     *         },
+     *         renderHTML() {
+     *             return ["p", 0];
+     *         },
+     *     }),
+     *     Node.create({
+     *         name: "text",
+     *         group: "inline",
+     *     }),
+     * ];
+     * ```
      *
      * @default true
      */
@@ -99,9 +129,8 @@ export interface RichTextModelOptions {
  * Options for creating and managing a rich text editor.
  */
 export interface RichTextEditorOptions<
-    TContext extends RichTextContext = RichTextContext,
-    TToolset extends EditorToolset<TContext> = EditorToolset<TContext>
-> extends RichTextEditorConfig<TContext, TToolset> {
+    TToolset extends EditorToolset = EditorToolset
+> extends RichTextEditorConfig<TToolset> {
     /**
      * Optional reactive model configuration.
      */
@@ -112,9 +141,8 @@ export interface RichTextEditorOptions<
  * Properties accepted by the OwRichTextEditor component.
  */
 export interface OwRichTextEditorProps<
-    TContext extends RichTextContext = RichTextContext,
-    TToolset extends EditorToolset<TContext> = EditorToolset<TContext>
-> extends RichTextEditorConfig<TContext, TToolset> {
+    TToolset extends EditorToolset = EditorToolset
+> extends RichTextEditorConfig<TToolset> {
     /**
      * Content synchronized with the editor through v-model.
      *
@@ -141,7 +169,7 @@ export interface OwRichTextEditorProps<
      *
      * When provided, an input name is provided.
      */
-    name: string;
+    name?: string;
 }
 
 

@@ -2,8 +2,6 @@ import { unref } from "vue";
 import type { Editor } from "@tiptap/core";
 
 import type {
-    Action,
-    AnyAction,
     Toolset,
     ToolsetAction,
     ToolsetInstance,
@@ -12,18 +10,22 @@ import type {
 } from "ox-watt";
 import { useToolset, createAction } from "ox-watt";
 
-import type { RichTextContext, EditorToolset } from "../types";
+import type {
+    RichTextContext,
+    EditorToolset,
+    EditorAction,
+    AnyEditorAction
+} from "../types";
 
 
 export function useEditorToolset<
-    TContext extends RichTextContext,
-    TToolset extends EditorToolset<TContext, any>=EditorToolset<TContext, any>,
+    TToolset extends EditorToolset<any>=EditorToolset<any>,
     TAction extends ToolsetAction<TToolset> = ToolsetAction<TToolset>
 >(
     definition: TToolset,
-    context: TContext,
-    options: Omit<UseToolsetOptions<TContext>, "register"> = {},
-): ToolsetInstance<TContext, TToolset> {
+    context: RichTextContext,
+    options: Omit<UseToolsetOptions<RichTextContext>, "register"> = {},
+): ToolsetInstance<RichTextContext, TToolset> {
     return useToolset(definition, context, {
         ...options, register: true
     })
@@ -40,24 +42,23 @@ export type EditorCommand =
 /**
  * Defines a declarative editor action.
  *
- * @template TContext - Action execution context.
  */
-export interface EditorActionInput<TContext extends RichTextContext>
+export interface EditorActionInput
 {
     /** TipTap command and its optional arguments. */
     command: EditorCommand;
 
     /** Custom action implementation. */
-    run?: (context: TContext) => unknown;
+    run?: (context: RichTextContext) => unknown;
 
     /** Custom enabled-state implementation. */
-    isEnabled?: (context: TContext) => boolean;
+    isEnabled?: (context: RichTextContext) => boolean;
 
     /** Active-state configuration or custom implementation. */
     isActive?:
         | string
         | Record<string, unknown>
-        | ((context: TContext) => boolean);
+        | ((context: RichTextContext) => boolean);
 }
 
 
@@ -69,7 +70,7 @@ export interface EditorActionInput<TContext extends RichTextContext>
  * @param can - Whether to check command availability without executing it.
  * @returns Whether the command was successful or available.
  */
-function executeCommand(
+export function executeCommand(
     editor: Editor,
     command: EditorCommand,
     can = false
@@ -92,7 +93,6 @@ function executeCommand(
 /**
  * Normalizes declarative editor actions into toolset action definitions.
  *
- * @template TContext - Action execution context.
  * @template TAction - Resulting action definition type.
  *
  * @param inputs - Declarative action definitions.
@@ -100,19 +100,17 @@ function executeCommand(
  * @returns Normalized action definitions.
  */
 export function createEditorActions<
-    TContext extends RichTextContext = RichTextContext,
-    TAction extends AnyAction<TContext> = AnyAction<TContext>
+    TAction extends AnyEditorAction = AnyEditorAction
 >(
-    inputs: (EditorActionInput<TContext> & Omit<TAction, "run" | "isActive" | "isEnabled">)[],
-    options: CreateActionOptions
+    inputs: (EditorActionInput & Omit<TAction, "run" | "isActive" | "isEnabled">)[],
+    options: CreateActionOptions = {}
 ): TAction[] {
-    return inputs.map((input) => createEditorAction<TContext, TAction>(input, options));
+    return inputs.map((input) => createEditorAction<TAction>(input, options));
 }
 
 /**
  * Normalizes a declarative editor action into an action definition.
  *
- * @template TContext - Action execution context.
  * @template TAction - Resulting action definition type.
  *
  * @param action - Declarative action definition.
@@ -120,11 +118,10 @@ export function createEditorActions<
  * @returns Normalized action definition.
  */
 export function createEditorAction<
-    TContext extends RichTextContext = RichTextContext,
-    TAction extends AnyAction<TContext> = AnyAction<TContext>
+    TAction extends AnyEditorAction = AnyEditorAction
 >(
-    action: EditorActionInput<TContext> & Omit<TAction, "run" | "isActive" | "isEnabled">,
-    options: CreateActionOptions
+    action: EditorActionInput & Omit<TAction, "run" | "isActive" | "isEnabled">,
+    options: CreateActionOptions = {}
 ): TAction {
     const {
         command,
@@ -134,24 +131,27 @@ export function createEditorAction<
         ...attrs
     } = action;
 
-    return createAction({
-        ...attrs,
+    return createAction<RichTextContext, TAction>(
+        {
+            ...attrs,
 
-        run: run ?? ((context: TContext) => executeCommand(
-            unref(context.editor),
-            command
-        )),
+            run: run ?? ((context: RichTextContext) => executeCommand(
+                unref(context.editor),
+                command
+            )),
 
-        isEnabled: isEnabled ?? ((context: TContext) => executeCommand(
-            unref(context.editor),
-            command,
-            true
-        )),
+            isEnabled: isEnabled ?? ((context: RichTextContext) => executeCommand(
+                unref(context.editor),
+                command,
+                true
+            )),
 
-        isActive: typeof isActive === "function"
-            ? isActive
-            : isActive !== undefined
-                ? (context: TContext) => unref(context.editor).isActive(isActive)
-                : (context: TContext) => unref(context.editor).isActive(action.name)
-    } as unknown as TAction);
+            isActive: typeof isActive === "function"
+                ? isActive
+                : isActive !== undefined
+                    ? (context: RichTextContext) => unref(context.editor).isActive(isActive)
+                    : (context: RichTextContext) => unref(context.editor).isActive(action.name)
+        } as unknown as TAction,
+        options
+    );
 }

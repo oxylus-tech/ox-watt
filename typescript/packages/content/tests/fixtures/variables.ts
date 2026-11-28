@@ -62,3 +62,31 @@ export function createTestVariableAction(
         variables: TestVariableGroups,
     } as VariableAction;
 }
+
+/**
+ * Returns a variable from the shared test fixtures.
+ *
+ * @param groupName - Name of the variable group.
+ * @param variableName - Name of the variable.
+ * @returns The matching variable.
+ */
+export function getTestVariable(
+    groupName: string,
+    variableName: string,
+): Variable {
+    const group = TestVariableGroups.find(
+        (item) => item.name === groupName,
+    );
+
+    const variable = group?.items.find(
+        (item) => item.name === variableName,
+    );
+
+    if (!variable) {
+        throw new Error(
+            `Unknown test variable "${groupName}.${variableName}".`,
+        );
+    }
+
+    return variable;
+}

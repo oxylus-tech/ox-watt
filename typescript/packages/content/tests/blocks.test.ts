@@ -13,9 +13,11 @@ const schema = getSchema([
     StarterKit,
     VariableNode.configure({
         block: TestVariableAction,
+        variables: TestVariableGroups,
     }),
     IfVariableNode.configure({
         block: TestVariableAction,
+        variables: TestVariableGroups,
     }),
 ]);
 

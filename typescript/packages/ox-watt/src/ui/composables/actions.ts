@@ -79,7 +79,7 @@ export interface UseNamedActionOptions {
 
 
 export interface CreateActionOptions {
-    i18nPrefix: string
+    i18nPrefix?: string
 }
 
 /**
@@ -92,10 +92,10 @@ export function createAction<
     TAction extends AnyAction<TContext> = AnyAction<TContext>
 >(
     action: TAction,
-    options?: CreateActionOptions
+    options: CreateActionOptions = {}
 ): TAction {
     let result = {...action}
-    if(options?.i18nPrefix) {
+    if(options.i18nPrefix) {
         const prefix = `${options.i18nPrefix}.${action.name}`;
 
         if (!action.title)

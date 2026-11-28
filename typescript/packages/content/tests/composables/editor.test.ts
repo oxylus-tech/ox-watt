@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { RichTextContext, RichTextEditorOptions } from "../../src/types/editor";
 import { useRichTextEditor } from "../../src/composables/editor";
 
-import { TestExtension } from "../fixtures";
+import { createTestExtension } from "../fixtures";
 
 
 /**
@@ -22,7 +22,6 @@ function mountEditor(
     const component = defineComponent({
         setup() {
             context = useRichTextEditor(options);
-
             return () => h("div");
         },
     });
@@ -71,7 +70,7 @@ describe("useRichTextEditor", () => {
 
     it("should include custom extensions", () => {
         const { wrapper, context } = mountEditor({
-            extensions: [TestExtension],
+            extensions: [createTestExtension()],
         });
 
         const names = context.editor.value!.extensionManager.extensions

@@ -1,10 +1,9 @@
 import type {
-    Action,
     Toolset,
     NamedDefinition,
     NamedGroupDefinition
 } from "ox-watt"
-import type { RichTextContext } from "./editor"
+import type { RichTextContext, EditorAction } from "./editor"
 
 
 /**
@@ -25,10 +24,11 @@ export interface VariableGroup
  * An action that will insert a block in the edited content.
  */
 export type BlockAction<
-    TContext extends RichTextContext=RichTextContext,
     TParams = void,
     TResult = unknown
-> = Action<TContext, TParams, TResult>
+> = EditorAction<TParams, TResult>
+
+export type AnyBlockAction = BlockAction<any, any>
 
 /**
  * Parameters of a variable action.
@@ -42,18 +42,16 @@ export interface VariableActionParam {
  * A block action that insert/manipulate a related variable.
  */
 export type VariableAction<
-    TContext extends RichTextContext=RichTextContext,
     TParams extends VariableActionParam = VariableActionParam,
     TResult = unknown
-> = BlockAction<TContext, TParams, TResult> & {
-    variables: VariableGroup[]
-}
+> = BlockAction<TParams, TResult>
+
+export type AnyVariableAction = BlockAction<VariableActionParam, any>
 
 /**
  * An action that inserts a conditional variable block.
  */
 export type IfVariableAction<
-    TContext extends RichTextContext = RichTextContext,
     TParams extends VariableActionParam = VariableActionParam,
     TResult = unknown
-> = VariableAction<TContext, TParams, TResult>;
+> = VariableAction<TParams, TResult>;

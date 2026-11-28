@@ -1,16 +1,25 @@
+import type { Component } from "vue"
 import { Node, type NodeConfig } from '@tiptap/core';
 import type { DOMOutputSpec } from '@tiptap/pm/model';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 
-import OwVariableNode from './components/blocks/OwVariableNode';
-import {Variable, VariableGroup, BlockAction, VariableAction} from "./types/blocks"
+import OwVariableNode from './components/blocks/OwVariableNode.vue';
+import type {
+    RichTextContext,
+    Variable,
+    VariableGroup,
+    BlockAction,
+    VariableAction,
+    AnyBlockAction,
+    AnyVariableAction,
+} from "./types"
 
 
 /**
  * Options shared by block node extensions.
  */
 export interface BlockNodeOptions<
-    TBlock extends BlockAction = BlockAction
+    TBlock extends AnyBlockAction = AnyBlockAction
 > {
     /** Block definition associated with the node. */
     block: TBlock | null;
@@ -24,14 +33,19 @@ export interface BlockNodeOptions<
 }
 
 
-export interface VariableNodeOptions
-    extends BlockNodeOptions<VariableAction>
+export interface VariableNodeOptions<
+    TBlock extends AnyVariableAction = AnyVariableAction
+>
+    extends BlockNodeOptions<TBlock>
 {
+    /** Available variables. **/
+    variables: VariableGroup[];
 }
 
 
 export interface CreateBlockNodeOptions<
-    TOptions extends BlockNodeOptions = BlockNodeOptions
+    TBlock extends BlockAction<any, any> = BlockAction<any, any>,
+    TOptions extends BlockNodeOptions<TBlock> = BlockNodeOptions<TBlock>
 >
     extends Partial<Omit<NodeConfig<TOptions>, "name">>
 {
@@ -61,9 +75,9 @@ export function resolveVariable(
     }
 
     const [groupName, variableName] = parts;
-    const group = variables.find(group => group.name === groupName);
+    const group = variables.find((group: VariableGroup) => group.name === groupName);
 
-    return group?.items?.find(variable => variable.name === variableName);
+    return group?.items?.find((variable: Variable) => variable.name === variableName);
 }
 
 
@@ -75,10 +89,11 @@ export function resolveVariable(
  * @returns TipTap node configuration.
  */
 function createBlockNodeConfig<
-    TOptions extends BlockNodeOptions = BlockNodeOptions
+    TBlock extends BlockAction<any, any> = BlockAction<any, any>,
+    TOptions extends BlockNodeOptions<TBlock> = BlockNodeOptions<TBlock>
 >(
     name: string,
-    options: CreateBlockNodeOptions<TOptions> = {},
+    options: CreateBlockNodeOptions<TBlock, TOptions> = {},
 ): Partial<NodeConfig<TOptions>> {
     const {inline, options: nodeOptions, ...nodeConfig} = options
 
@@ -92,13 +107,13 @@ function createBlockNodeConfig<
         isolating: options.isolating ?? !inline,
         draggable: options.draggable ?? inline,
 
-        addOptions(): TOptions {
+        addOptions() {
             return {
-                block: null,
+                block: null as TBlock | null,
                 ...(nodeOptions ?? {}),
             };
         },
-    };
+    } as Partial<NodeConfig<TOptions>>;
 }
 
 
@@ -110,16 +125,17 @@ function createBlockNodeConfig<
  * @returns TipTap node configuration.
  */
 function createVariableNodeConfig<
-    TOptions extends VariableNodeOptions = VariableNodeOptions
+    TBlock extends VariableAction<any, any> = VariableAction<any, any>,
+    TOptions extends VariableNodeOptions<TBlock> = VariableNodeOptions<TBlock>
 >(
     name: string,
-    options?: CreateBlockNodeOptions<TOptions>,
+    options: CreateBlockNodeOptions<TBlock, TOptions> = {},
 ): Partial<NodeConfig<TOptions>> {
     const inline = options?.inline;
     const tag = inline ? 'span' : 'div';
 
     return {
-        ...createBlockNodeConfig(name, options),
+        ...createBlockNodeConfig<TBlock, TOptions>(name, options),
 
         addAttributes(): Record<keyof Variable, { default: null }> {
             return {
@@ -145,7 +161,7 @@ function createVariableNodeConfig<
                         if(!variableName || !block)
                             return false
 
-                        const variable = resolveVariable(block.variables, variableName)
+                        const variable = resolveVariable(this.options.variables, variableName)
                         if (!variable)
                             return false;
 
@@ -173,7 +189,7 @@ function createVariableNodeConfig<
         },
 
         addNodeView() {
-            return VueNodeViewRenderer(OwVariableNode);
+            return VueNodeViewRenderer(OwVariableNode as Component);
         },
     };
 }

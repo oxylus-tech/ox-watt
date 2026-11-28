@@ -3,8 +3,12 @@
         "actions": {
             "variable": {
                 "title": "Variable",
-                "description": "Insert a dynamic value",
+                "description": "Insert a dynamic value"
             },
+            "ifvariable": {
+                "title": "Conditional",
+                "description": "Insert content if the dynamic value is provided."
+            }
         },
         "toolsets": {
             "basic": {

@@ -3,10 +3,10 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 
 import type { EditorToolset, RichTextContext } from "../types/editor";
-import { createActions } from "./toolset";
+import { createEditorActions } from "./editor";
 
 
-export const basicFormatActions = createActions([
+export const basicFormatActions = createEditorActions([
     {
         name: "bold",
         icon: "mdi-format-bold",
@@ -55,10 +55,10 @@ export const basicFormatActions = createActions([
         icon: "mdi-format-list-numbered",
         command: "toggleOrderedList",
     },
-])
+], {i18nPrefix: "ow-content.actions"})
 
 
-export const basicFormat: EditorToolset<RichTextContext> = {
+export const basicFormat: EditorToolset = {
     name: "basic-format",
     extensions: [
         Underline,
@@ -73,13 +73,13 @@ export const basicFormat: EditorToolset<RichTextContext> = {
 /**
  * Basic toolset offering simple formatting and base utils.
  */
-export const basicToolset: EditorToolset<RichTextContext> = {
+export const basicToolset: EditorToolset = {
     name: "basic",
 
     extensions: basicFormat.extensions,
     items: [
         ...basicFormatActions,
-        ...createActions([
+        ...createEditorActions([
             {
                 name: "undo",
                 icon: "mdi-undo",

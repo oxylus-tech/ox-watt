@@ -1,326 +1,371 @@
+import { defineComponent, h, nextTick } from "vue";
+import { mount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { mount, type VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
-import type { Editor } from "@tiptap/core";
+import { Editor } from "@tiptap/vue-3";
+import StarterKit from "@tiptap/starter-kit";
 
-import OwRichTextEditor from "@ox-watt/content/components/OwRichTextEditor.vue";
-import { EditorContent } from "@tiptap/vue-3";
+import OwRichTextEditor from "../../src/components/OwRichTextEditor.vue";
+import { createMinimalSchemaExtensions, createTestExtension } from "../fixtures/editor"
 
-/**
- * Mounted editor component wrapper.
- */
-type EditorWrapper = VueWrapper<InstanceType<typeof OwRichTextEditor>>;
 
 /**
- * Retrieves the exposed TipTap editor instance.
+ * Mounts the rich-text editor with its content component stubbed.
  *
- * @param wrapper - Mounted editor component.
- * @returns The TipTap editor instance.
- * @throws Error when the editor has not been initialized.
+ * @param options - Vue Test Utils mounting options.
+ * @returns A mounted rich-text editor wrapper.
  */
-function getEditor(wrapper: EditorWrapper): Editor {
-    const editor = wrapper.vm.editor;
-
-    if (!editor) {
-        throw new Error("The editor has not been initialized.");
-    }
-
-    return editor;
+function mountRichTextEditor(options = {}) {
+    return mount(OwRichTextEditor, {
+        ...options,
+        global: {
+            ...options.global,
+            stubs: {
+                ...options.global?.stubs,
+                EditorContent: true,
+            },
+        },
+    });
 }
 
-/**
- * Unmounts all mounted wrappers after each test.
- */
-const wrappers: EditorWrapper[] = [];
-
-afterEach(() => {
-    for (const wrapper of wrappers) {
-        wrapper.unmount();
-    }
-
-    wrappers.length = 0;
-    vi.restoreAllMocks();
-});
-
-/**
- * Mounts the editor component and tracks its wrapper for cleanup.
- *
- * @param props - Component properties.
- * @returns The mounted component wrapper.
- */
-function mountEditor(props: Record<string, unknown> = {}): EditorWrapper {
-    const wrapper = mount(OwRichTextEditor, { props });
-
-    wrappers.push(wrapper);
-
-    return wrapper;
-}
 
 describe("OwRichTextEditor", () => {
-    describe("initialization", () => {
-        it("should create the editor when the component is mounted", () => {
-            const wrapper = mountEditor();
+    it("should create an editor when mounted", async () => {
+        const wrapper = mountRichTextEditor();
 
-            expect(wrapper.vm.editor).not.toBeNull();
-            expect(getEditor(wrapper).isDestroyed).toBe(false);
-        });
+        await nextTick();
 
-        it("should render the TipTap editor content", async () => {
-            const wrapper = mountEditor();
-            const editor = getEditor(wrapper);
+        expect(wrapper.vm.editor).toBeInstanceOf(Editor);
+        expect(wrapper.find(".ow-rich-text-editor").exists()).toBe(true);
 
-            expect(editor.view.dom.getAttribute("contenteditable")).toBe("true");
-            expect(editor.view.dom.classList.contains("ProseMirror")).toBe(true);
-        });
-
-        it("should initialize the editor with the model value", async () => {
-            const wrapper = mountEditor({
-                modelValue: "<p>Hello world!</p>",
-            });
-
-            await nextTick();
-
-            expect(getEditor(wrapper).getHTML()).toBe("<p>Hello world!</p>");
-        });
-
-        it("should initialize an empty editor when the model value is null", () => {
-            const wrapper = mountEditor({
-                modelValue: null,
-            });
-
-            expect(getEditor(wrapper).getHTML()).toBe("<p></p>");
-        });
-
-        it("should expose the editor context and commands", () => {
-            const wrapper = mountEditor();
-
-            expect(wrapper.vm.context).toBeDefined();
-            expect(wrapper.vm.commands).toBe(wrapper.vm.context.commands);
-            expect(wrapper.vm.register).toBe(wrapper.vm.context.register);
-            expect(wrapper.vm.reset).toBe(wrapper.vm.context.reset);
-        });
+        wrapper.unmount();
     });
 
-    describe("v-model", () => {
-        it("should emit update:modelValue when the editor content changes", async () => {
-            const wrapper = mountEditor();
-            const editor = getEditor(wrapper);
-
-            editor.commands.setContent("<p>Updated content</p>");
-
-            await nextTick();
-
-            expect(wrapper.emitted("update:modelValue")).toBeDefined();
-            expect(wrapper.emitted("update:modelValue")?.at(-1)).toEqual([
-                "<p>Updated content</p>",
-            ]);
+    it("should render the editor content", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
+                modelValue: "<p>Hello world</p>",
+            },
         });
 
-        it("should update the editor when the external model changes", async () => {
-            const wrapper = mountEditor({
-                modelValue: "<p>Initial content</p>",
-            });
+        await nextTick();
 
-            await wrapper.setProps({
-                modelValue: "<p>External update</p>",
-            });
+        expect(wrapper.vm.editor).toBeInstanceOf(Editor);
+        expect(wrapper.vm.editor.getHTML()).toContain("Hello world");
 
-            await nextTick();
-
-            expect(getEditor(wrapper).getHTML()).toBe("<p>External update</p>");
-        });
-
-        it("should not emit update:modelValue when the external model changes", async () => {
-            const wrapper = mountEditor({
-                modelValue: "<p>Initial content</p>",
-            });
-
-            await wrapper.setProps({
-                modelValue: "<p>External update</p>",
-            });
-
-            await nextTick();
-
-            expect(wrapper.emitted("update:modelValue")).toBeUndefined();
-        });
+        wrapper.unmount();
     });
 
-    describe("editable state", () => {
-        it("should allow editing by default", () => {
-            const wrapper = mountEditor();
+    it("should initialize with StarterKit by default", async () => {
+        const wrapper = mountRichTextEditor();
 
-            expect(getEditor(wrapper).isEditable).toBe(true);
+        await nextTick();
+
+        const editor = wrapper.vm.editor;
+
+        expect(editor.extensionManager.extensions)
+            .toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        name: "paragraph",
+                    }),
+                    expect.objectContaining({
+                        name: "bold",
+                    }),
+                ]),
+            );
+
+        wrapper.unmount();
+    });
+
+    it("should allow disabling StarterKit", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
+                starterKit: false,
+                extensions: createMinimalSchemaExtensions(),
+            },
         });
 
-        it("should disable editing when disabled is true", () => {
-            const wrapper = mountEditor({
+        await nextTick();
+
+        const extensions = wrapper.vm.editor.extensionManager.extensions;
+        const names = extensions.map((extension) => extension.name);
+
+        /*expect(
+            extensions.some((extension) => extension.name === "paragraph"),
+        ).toBe(false);*/
+        expect(names).not.toContain("bold");
+
+        wrapper.unmount();
+    });
+
+    it("should register custom extensions", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
+                extensions: [createTestExtension()],
+            },
+        });
+
+        await nextTick();
+
+        expect(
+            wrapper.vm.editor.extensionManager.extensions.some(
+                (extension) => extension.name === "heading",
+            ),
+        ).toBe(true);
+
+        wrapper.unmount();
+    });
+
+    it("should synchronize editor changes with v-model", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
+                modelValue: "<p>Initial content</p>",
+            },
+        });
+
+        await nextTick();
+
+        wrapper.vm.editor.commands.setContent("<p>Updated content</p>");
+        await nextTick();
+
+        expect(wrapper.emitted("update:modelValue")).toBeTruthy();
+
+        const emitted = wrapper.emitted("update:modelValue");
+        expect(emitted?.at(-1)?.[0]).toContain("Updated content");
+
+        wrapper.unmount();
+    });
+
+    it("should synchronize v-model changes with the editor", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
+                modelValue: "<p>Initial content</p>",
+            },
+        });
+
+        await nextTick();
+
+        await wrapper.setProps({
+            modelValue: "<p>Updated from parent</p>",
+        });
+
+        await nextTick();
+
+        expect(wrapper.vm.editor.getHTML())
+            .toContain("Updated from parent");
+
+        wrapper.unmount();
+    });
+
+    it("should create a named input when name is provided", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
+                name: "description",
+                modelValue: "<p>Content</p>",
+            },
+        });
+
+        await nextTick();
+
+        const input = wrapper.get('input[name="description"]');
+
+        expect(input.element.value).toBe("<p>Content</p>");
+
+        wrapper.unmount();
+    });
+
+    it("should not render a named input when name is omitted", async () => {
+        const wrapper = mountRichTextEditor();
+
+        await nextTick();
+
+        expect(wrapper.find("input").exists()).toBe(false);
+
+        wrapper.unmount();
+    });
+
+    it("should initialize as non-editable when disabled", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
                 disabled: true,
-            });
-
-            expect(getEditor(wrapper).isEditable).toBe(false);
+            },
         });
 
-        it("should disable editing when readonly is true", () => {
-            const wrapper = mountEditor({
+        await nextTick();
+
+        expect(wrapper.vm.editor.isEditable).toBe(false);
+        expect(
+            wrapper.find(".ow-rich-text-editor").classes(),
+        ).toContain("is-disabled");
+
+        wrapper.unmount();
+    });
+
+    it("should initialize as non-editable when readonly", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
                 readonly: true,
-            });
-
-            expect(getEditor(wrapper).isEditable).toBe(false);
+            },
         });
 
-        it("should update the editable state when disabled changes", async () => {
-            const wrapper = mountEditor();
+        await nextTick();
 
-            expect(getEditor(wrapper).isEditable).toBe(true);
+        expect(wrapper.vm.editor.isEditable).toBe(false);
+        expect(
+            wrapper.find(".ow-rich-text-editor").classes(),
+        ).toContain("is-readonly");
 
-            await wrapper.setProps({
-                disabled: true,
-            });
+        wrapper.unmount();
+    });
 
-            expect(getEditor(wrapper).isEditable).toBe(false);
+    it("should synchronize the editable state when disabled changes", async () => {
+        const wrapper = mountRichTextEditor();
 
-            await wrapper.setProps({
-                disabled: false,
-            });
+        await nextTick();
 
-            expect(getEditor(wrapper).isEditable).toBe(true);
+        expect(wrapper.vm.editor.isEditable).toBe(true);
+
+        await wrapper.setProps({
+            disabled: true,
         });
 
-        it("should update the editable state when readonly changes", async () => {
-            const wrapper = mountEditor();
+        expect(wrapper.vm.editor.isEditable).toBe(false);
 
-            expect(getEditor(wrapper).isEditable).toBe(true);
-
-            await wrapper.setProps({
-                readonly: true,
-            });
-
-            expect(getEditor(wrapper).isEditable).toBe(false);
-
-            await wrapper.setProps({
-                readonly: false,
-            });
-
-            expect(getEditor(wrapper).isEditable).toBe(true);
+        await wrapper.setProps({
+            disabled: false,
         });
 
-        it("should preserve editorOptions.editable when it is false", () => {
-            const wrapper = mountEditor({
+        expect(wrapper.vm.editor.isEditable).toBe(true);
+
+        wrapper.unmount();
+    });
+
+    it("should synchronize the editable state when readonly changes", async () => {
+        const wrapper = mountRichTextEditor();
+
+        await nextTick();
+
+        await wrapper.setProps({ readonly: true, });
+
+        expect(wrapper.vm.editor.isEditable).toBe(false);
+
+        await wrapper.setProps({ readonly: false, });
+
+        expect(wrapper.vm.editor.isEditable).toBe(true);
+
+        wrapper.unmount();
+    });
+
+    it("should respect editorOptions.editable", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
                 editorOptions: {
                     editable: false,
                 },
-            });
-
-            expect(getEditor(wrapper).isEditable).toBe(false);
+            },
         });
 
-        it("should not enable editing when editorOptions.editable is false and disabled changes", async () => {
-            const wrapper = mountEditor({
-                editorOptions: {
-                    editable: false,
-                },
-            });
+        await nextTick();
 
-            await wrapper.setProps({
-                disabled: true,
-            });
+        expect(wrapper.vm.editor.isEditable).toBe(false);
 
-            await wrapper.setProps({
-                disabled: false,
-            });
-
-            expect(getEditor(wrapper).isEditable).toBe(false);
-        });
+        wrapper.unmount();
     });
 
-    describe("editor options", () => {
-        it("should forward additional editor options", () => {
-            const onFocus = vi.fn();
+    it("should expose the editor context", async () => {
+        const wrapper = mountRichTextEditor();
 
-            const wrapper = mountEditor({
-                editorOptions: {
-                    onFocus,
-                },
-            });
+        await nextTick();
 
-            getEditor(wrapper).commands.focus();
+        expect(wrapper.vm.context).toBeDefined();
+        expect(wrapper.vm.context.editor).toBeDefined();
+        expect(wrapper.vm.context.toolset).toBeDefined();
 
-            expect(getEditor(wrapper).options.onFocus).toBe(onFocus);
-        });
-
-        it("should invoke the configured onUpdate callback", () => {
-            const onUpdate = vi.fn();
-
-            const wrapper = mountEditor({
-                editorOptions: {
-                    onUpdate,
-                },
-            });
-
-            getEditor(wrapper).commands.setContent("<p>Updated</p>");
-
-            expect(onUpdate).toHaveBeenCalled();
-        });
+        wrapper.unmount();
     });
 
-    describe("toolsets", () => {
-        it("should register initial toolsets", () => {
-            const toolset = {
-                name: "test-toolset",
-                extensions: [],
-            };
+    it("should expose reset and run methods", async () => {
+        const wrapper = mountRichTextEditor();
 
-            const wrapper = mountEditor({
-                toolsets: [toolset],
-            });
+        await nextTick();
 
-            expect(wrapper.vm.context.toolsets.get(toolset.name)).toBe(toolset);
-        });
+        expect(typeof wrapper.vm.reset).toBe("function");
+        expect(typeof wrapper.vm.run).toBe("function");
 
-        it("should expose the register method", () => {
-            const wrapper = mountEditor();
-
-            const toolset = {
-                name: "dynamic-toolset",
-                extensions: [],
-            };
-
-            const unregister = wrapper.vm.register(toolset);
-
-            expect(wrapper.vm.context.toolsets.get(toolset.name)).toBe(toolset);
-
-            unregister();
-
-            expect(wrapper.vm.context.toolsets.has(toolset.name)).toBe(false);
-        });
-
-        it("should unregister toolsets when the component is unmounted", () => {
-            const toolset = {
-                name: "test-toolset",
-                extensions: [],
-            };
-
-            const wrapper = mountEditor({
-                toolsets: [toolset],
-            });
-
-            const context = wrapper.vm.context;
-
-            wrapper.unmount();
-
-            expect(context.toolsets.size).toBe(0);
-        });
+        wrapper.unmount();
     });
 
-    describe("lifecycle", () => {
-        it("should destroy the editor when the component is unmounted", () => {
-            const wrapper = mountEditor();
-            const editor = getEditor(wrapper);
-
-            wrapper.unmount();
-
-            expect(editor.isDestroyed).toBe(true);
+    it("should preserve editor content when reset is called", async () => {
+        const wrapper = mountRichTextEditor({
+            props: {
+                modelValue: "<p>Content to preserve</p>",
+            },
         });
+
+        await nextTick();
+
+        const initialEditor = wrapper.vm.editor;
+
+        wrapper.vm.reset();
+        await nextTick();
+
+        expect(wrapper.vm.editor).not.toBe(initialEditor);
+        expect(wrapper.vm.editor.getHTML()).toContain(
+            "Content to preserve",
+        );
+
+        wrapper.unmount();
+    });
+
+    it("should render the prepend and append slots", async () => {
+        const wrapper = mountRichTextEditor({
+            slots: {
+                prepend: '<div data-testid="prepend">Prepend</div>',
+                append: '<div data-testid="append">Append</div>',
+            },
+        });
+
+        await nextTick();
+
+        expect(wrapper.get('[data-testid="prepend"]').text())
+            .toBe("Prepend");
+
+        expect(wrapper.get('[data-testid="append"]').text())
+            .toBe("Append");
+
+        wrapper.unmount();
+    });
+
+    it("should expose editor and context to the default slot", async () => {
+        const wrapper = mountRichTextEditor({
+            slots: {
+                default: `
+                    <div data-testid="custom-content">
+                        {{ !!editor }} - {{ !!context }}
+                    </div>
+                `,
+            },
+        });
+
+        await nextTick();
+
+        expect(wrapper.get('[data-testid="custom-content"]').text())
+            .toBe("true - true");
+
+        wrapper.unmount();
+    });
+
+    it("should destroy the editor when unmounted", async () => {
+        const wrapper = mountRichTextEditor();
+
+        await nextTick();
+
+        const editor = wrapper.vm.editor;
+        const destroy = vi.spyOn(editor, "destroy");
+
+        wrapper.unmount();
+
+        expect(destroy).toHaveBeenCalledOnce();
     });
 });

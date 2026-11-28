@@ -1,18 +1,31 @@
-import type { AnyExtension, EditorOptions, JSONContent, ChainedCommands } from "@tiptap/core";
+import type {
+    AnyExtension,
+    EditorOptions,
+    JSONContent,
+    ChainedCommands
+} from "@tiptap/core";
 import { Editor } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 
-import { markRaw, onBeforeUnmount, onMounted, provide, inject, shallowReactive, shallowRef, watch } from "vue";
+import {
+    markRaw,
+    onBeforeUnmount,
+    onMounted,
+    provide,
+    inject,
+    shallowRef,
+    watch
+} from "vue";
 import type { InjectionKey, ShallowRef } from "vue";
 
-import { type ToolsetInstance, isAction } from "ox-watt/ui";
+import { useRegistration, useRootToolset } from "ox-watt";
+
 import type {
     EditorToolset,
     RichTextContext,
     RichTextEditorOptions,
     RichTextModelOptions,
 } from "../types/editor";
-import { useRegistration, useRootToolset } from "ox-watt";
 
 
 /**
@@ -20,6 +33,22 @@ import { useRegistration, useRootToolset } from "ox-watt";
  */
 export const richTextContextKey: InjectionKey<RichTextContext> =
     Symbol("RichTextContext");
+
+
+/**
+ * Check whether an object exposes TipTap extensions.
+ *
+ * @param value Object to inspect.
+ * @returns Whether the object exposes an extensions property.
+ */
+function hasExtensions(
+    value: unknown,
+): value is { extensions?: AnyExtension[] } {
+    return typeof value === "object"
+        && value !== null
+        && "extensions" in value;
+}
+
 
 
 /**
@@ -32,10 +61,9 @@ export const richTextContextKey: InjectionKey<RichTextContext> =
  * @returns The editor context.
  */
 export function useRichTextEditor<
-    TContext extends RichTextContext = RichTextContext,
-    TToolset extends EditorToolset<TContext> = EditorToolset<TContext>
+    TToolset extends EditorToolset = EditorToolset
 >(
-    options: RichTextEditorOptions<TContext, TToolset> = {},
+    options: RichTextEditorOptions<TToolset> = {},
 ): RichTextContext {
     const editor = shallowRef<Editor | null>(null);
     const model = options.model
@@ -57,12 +85,12 @@ export function useRichTextEditor<
             ...(options.extensions ?? [])
         ];
 
-        for (const toolset of context.toolset.registry.values()) {
-            if(!isAction(toolset as TToolset))
-                extensions.push(...((toolset as TToolset).extensions ?? []));
+        for (const item of context.toolset.registry.values()) {
+            if (hasExtensions(item))
+                extensions.push(...(item.extensions ?? []));
         }
-        // TODO: unique extensions
-        return extensions
+
+        return extensions;
     }
 
     /**
@@ -132,10 +160,11 @@ export function useRichTextEditor<
     context.toolset = useRootToolset(
         {
             ...(options.toolset ?? {}),
-            name: "editor"
+            name: "editor",
+            items: options.toolset?.items ?? [],
         },
         context,
-    )
+    );
 
     // Create the editor only after the component has been mounted.
     onMounted(() => { createEditor(); });

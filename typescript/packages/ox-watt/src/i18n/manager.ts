@@ -1,34 +1,10 @@
 import { createI18n, type Composer } from 'vue-i18n';
 
-import type { NamedDefinitionBase } from "../types"
+import type { NamedDefinitionBase } from "../utils/types"
 import { detectLocale } from './locale';
 import { getStaticLocaleResources, getDomLocaleResources, } from './resources';
 
-import type { AppLocaleLoaders, LocaleMessages, LocaleResource, } from './types';
-
-/**
- * I18n initialization options.
- */
-export interface I18nOptions {
-    /**
-     * Locale used when a translation is missing.
-     */
-    fallbackLocale: string;
-
-    /**
-     * Explicit initial locale.
-     *
-     * When omitted, the locale is detected from the browser environment.
-     */
-    locale?: string;
-
-    /**
-     * Name of the cookie used to detect the initial locale.
-     *
-     * @default 'language'
-     */
-    cookieName?: string;
-}
+import type { AppLocaleLoaders, LocaleMessages, LocaleResource, I18nOptions } from './types';
 
 /**
  * Creates the Vue I18n instance in Composition API mode.
@@ -361,7 +337,7 @@ export function tobj<const TKeys extends string[]>(
 }
 
 
-export function tNamedI18n(prefix: string): NamedDefinitionBase {
+export function tNamedI18n(prefix: string): Omit<NamedDefinitionBase, "name"> {
     return tobj(prefix, ["title", "description"])
 }
 

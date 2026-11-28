@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
     createEditorAction,
     createEditorActions,
-} from "../../src/actions/toolset";
+} from "../../src/actions/editor";
 
 import {
     createTestEditor,

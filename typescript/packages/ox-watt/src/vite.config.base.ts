@@ -44,7 +44,7 @@ export default defineConfig({
 
         sourcemap: true,
         emptyOutDir: true,
-
+        manifest: "manifest.json",
         rollupOptions: {
             external: [
                 /^vue($|\/)/,

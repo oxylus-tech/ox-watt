@@ -1,3 +1,3 @@
 export * from "./basicToolset"
-export * from "./toolset"
+export * from "./editor"
 export * from "./variables"

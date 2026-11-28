@@ -1,8 +1,13 @@
 <script setup lang="ts">
+import { computed } from "vue"
 import { OwAction, OwActionBtn } from "ox-watt";
-import { OwVariableActionProps } from "./types"
+
+import { useVariables } from "../../composables/variables";
+import type { OwVariableActionProps } from "./types"
 
 const props = defineProps<OwVariableActionProps>()
+const injectVariables = useVariables();
+const variables = computed(() => props.variables ?? injectVariables)
 </script>
 <template>
     <OwAction v-bind="props">
@@ -11,7 +16,7 @@ const props = defineProps<OwVariableActionProps>()
                 <template #activator="{props: slotProps}">
                     <OwActionBtn
                         v-bind="slotProps"
-                        :visible="bindings.visible"
+                        v-show="action.visible"
                         :title="bindings.title"
                         :description="bindings.description"
                         :icon="bindings.icon"
@@ -20,7 +25,7 @@ const props = defineProps<OwVariableActionProps>()
                 </template>
 
                 <v-list>
-                    <template v-for="group of props.action.definition.variables">
+                    <template v-for="group of variables">
                         <v-list-subheader>
                             <v-icon v-if="group.icon" class="mr-2">{{ group.icon }}</v-icon>
                             {{ group.title }}

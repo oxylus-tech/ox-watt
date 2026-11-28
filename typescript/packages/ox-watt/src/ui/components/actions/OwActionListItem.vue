@@ -8,7 +8,7 @@ import type { OwActionProps } from "./types";
 import OwAction from "./OwAction.vue";
 
 const attrs = useAttrs();
-const props = defineProps<Omit<OwActionProps, "noTitle">>();
+const props = defineProps<Omit<OwActionProps<any,any>, "noTitle">>();
 </script>
 
 <template>

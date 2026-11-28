@@ -1,8 +1,7 @@
-import { t } from "vue"
 import { Editor } from "@tiptap/vue-3"
 import {Selection} from "@tiptap/pm/state"
 
-import type { AnyAction } from "ox-watt";
+import type { AnyAction, ActionParam, CreateActionOptions } from "ox-watt";
 import { createAction } from "ox-watt";
 
 import type {
@@ -15,17 +14,14 @@ import { IfVariableNode, VariableNode } from "../blocks"
 import { moveSelectionAfterParent } from "../utils"
 
 
-
-
 export function createVariableAction<
-    TContext extends RichTextContext = RichTextContext,
-    TAction extends AnyAction<TContext> = AnyAction<TContext>
+    TAction extends VariableAction<any, any> = VariableAction<any, any>
 >(
-    action: (Omit<TAction, "run" | "isActive" | "isEnabled">),
+    action: Omit<TAction, "run" | "isActive" | "isEnabled">,
     options: CreateActionOptions
 ): TAction
 {
-    return createAction({
+    const definition = {
         ...action,
 
         isEnabled: (context: RichTextContext) => {
@@ -54,7 +50,10 @@ export function createVariableAction<
             return context.editor.value?.isActive(action.name) ?? false;
         },
 
-        run: (context: RichTextContext, params: VariableActionParam) => {
+        run: (context: RichTextContext, params: ActionParam<TAction>) => {
+            if(!params)
+                return;
+
             const editor = context.editor.value;
 
             if (!editor) {
@@ -70,7 +69,12 @@ export function createVariableAction<
                 ...(action.name === "ifvariable" ? { content: [] } : {}),
             }).run();
         },
-    }, options);
+    }
+
+    return createAction<RichTextContext, TAction>(
+        definition as unknown as TAction,
+        options
+    )
 }
 
 
